@@ -1,0 +1,24 @@
+# Dependencies and build output
+node_modules/
+.next/
+dist/
+build/
+out/
+coverage/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local env and secrets (never commit keys)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# NOTE: do NOT ignore .kiro/ - the hackathon rules require it at the repo root.
