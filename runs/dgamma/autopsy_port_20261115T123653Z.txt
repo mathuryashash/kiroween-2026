@@ -1,0 +1,41 @@
+Precision autopsy for dgamma(0.9009228736781166)
+  (the same code run twice: IEEE double vs 60-digit arithmetic; this measures rounding error only and suggests no fix)
+  result: double math range error   60-digit run 1.5556056927297046e+499336   difference inf ULP
+  60-digit run vs the 50-digit reference: inf ULP
+  NOTE: control flow differs between the two runs at ('dgamma', 329, 'return') vs ('dgamma', 330, 'line')
+  No line found where a value drifts more than 16 ULP from its 60-digit shadow.
+  The 60-digit run of the same code is ALSO wrong, so this is not a rounding problem: the code's logic or formula is wrong for this input.
+  Values assigned in the top-level function, in execution order (60-digit run):
+    line  259  y = abs(x)                                                    y = 0.90092287367811663
+    line  298  n = int(x)                                                    n = 0
+    line  301  y = x - n            # 0 <= y < 1                             y = 0.90092287367811663
+    line  302  n = n - 1                                                     n = -1
+    line  320  u = x + 1.0 - n    # equivalent to y - 1.0 but avoids cancel  u = 2.9009228736781166
+    line  321  s = -_EULER * u                                               s = -1.6744581253581795
+    line  322  term = u * u                                                  term = 8.4153535190289022
+    line  323  for _k in range(2, 17):                                       _k = 2   (assigned 15 times; last value 16)
+    line  325  s += _ZETA[_k] * term / _k                                    s = 5.2468927186526933   (assigned 8 times; last value 1149764.0718602576)
+    line  328  term *= u                                                     term = 24.412291513438574   (assigned 15 times; last value 72965086.485989119)
+    line  327  s -= _ZETA[_k] * term / _k                                    s = -4.5347617932383789   (assigned 7 times; last value -422283.0993054352)
+
+Precision autopsy for dgamma(-5.567919742701329e-05)
+  (the same code run twice: IEEE double vs 60-digit arithmetic; this measures rounding error only and suggests no fix)
+  result: double math range error   60-digit run -3.7344348234595312e+861969   difference inf ULP
+  60-digit run vs the 50-digit reference: inf ULP
+  NOTE: control flow differs between the two runs at ('dgamma', 329, 'return') vs ('dgamma', 330, 'line')
+  No line found where a value drifts more than 16 ULP from its 60-digit shadow.
+  The 60-digit run of the same code is ALSO wrong, so this is not a rounding problem: the code's logic or formula is wrong for this input.
+  Values assigned in the top-level function, in execution order (60-digit run):
+    line  259  y = abs(x)                                                    y = 5.5679197427013289e-5
+    line  298  n = int(x)                                                    n = 0
+    line  300  n = n - 1                                                     n = -1
+    line  301  y = x - n            # 0 <= y < 1                             y = 0.99994432080257299
+    line  302  n = n - 1                                                     n = -2
+    line  320  u = x + 1.0 - n    # equivalent to y - 1.0 but avoids cancel  u = 2.999944320802573
+    line  321  s = -_EULER * u                                               s = -1.7316148557996346
+    line  322  term = u * u                                                  term = 8.9996659279156109
+    line  323  for _k in range(2, 17):                                       _k = 2   (assigned 15 times; last value 16)
+    line  325  s += _ZETA[_k] * term / _k                                    s = 5.670313681741187   (assigned 8 times; last value 1984748.4917155166)
+    line  328  term *= u                                                     term = 26.998496689570855   (assigned 15 times; last value 129099423.33236401)
+    line  327  s -= _ZETA[_k] * term / _k                                    s = -5.1475960918021794   (assigned 7 times; last value -704913.84984884423)
+
