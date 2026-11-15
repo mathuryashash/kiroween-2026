@@ -1,0 +1,137 @@
+{
+  "name": "dgamma",
+  "impl": "port",
+  "timestamp": "20261115T122928Z",
+  "n_total": 2000,
+  "wall_time_s": 0.1265,
+  "toolchain": {
+    "gfortran": "N/A (port)",
+    "python": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+    "numpy": "2.5.4",
+    "mpmath": "1.4.1",
+    "scipy": "1.18.1"
+  },
+  "git_commit": "6fa4d7f06a19d7ce2b7ecb1d2ce04cf7f27b6761",
+  "manifest": {
+    "harness/__init__.py": "092d423773208540b889b446aed2e76e2169efcd07e28f13b4eaac4f8084000c",
+    "harness/driver.py": "c3417e4ca24404a1fea3a4f69b744bde71c9d5ec0df7491390c31d24b1db8125",
+    "harness/feedback.py": "eca2e41c3bb5fc54af6a5c28636a50ed1036a241bf7a95d2940b3a303c6fad11",
+    "harness/fetch.py": "ecbc2fafa4f5f4d83cbd452a4c9ba88ad4a858d93311512a5e32af3b8fd1202c",
+    "harness/parse.py": "48448e427709bcb44ea88560527e7ee161eb4cb2c94288835a051f23408337ed",
+    "harness/port_guard.py": "323ff3882c2515a61496f07b77075ebb143a470f7836cbc84130a6f856aa51f5",
+    "harness/port_runner.py": "699f4e007165e28fccd6a57432c437301d3f2f119a127d97e5e374d2d7eb5be7",
+    "harness/README.md": "75c94b27515b12500d53263295016fe3cc5426b4a104917be1ae5fa530a54c72",
+    "harness/trial.py": "fd8c2082d42d50adaafb37a15199845b252c477412e6ae28885b22779bddc730",
+    "harness/ulp.py": "c262299cc7a86c968abcd218dfdae8833d2fbfd69c3eabdcae30c761127450d8",
+    "harness/verdict.py": "9130e877f5d624767f9c13fe6e481fdc9bfece1354c374a7ba9c9735d2ec5bb8",
+    "oracle/__init__.py": "a3bef3370a865bde147eaab532a442561cf9a2b3903cdc8276a23c27b1f722e6",
+    "oracle/referees.py": "7a52871b2543d8c59bd6039044248eff62d9d18b19f4989d7d18160e7199539a",
+    "fortran/slatec/d9lgmc.f": "0590ea082b0a5cf871a21018e11e88c4c541e1299ddc6cd4cdf7eadde9859fb3",
+    "fortran/slatec/dcsevl.f": "8f907d21bbad242cf415e7916a48f6db2d2793164ac6652ead83a6cbbbd3bd62",
+    "fortran/slatec/dgamlm.f": "f392908f1fc8f0c3558a59d439936471714f5ecd26bf3957c9761c552103e3a3",
+    "fortran/slatec/dgamma.f": "6ed1d9ce1b8bb014e3736796d51c14709b2dd14fa789fd32fdc963ac90954426",
+    "fortran/slatec/initds.f": "27175c6f8b8d93c740b62d02667bf9576ce03c114db61abd53755504d0c9f8a6",
+    "fortran/slatec/SOURCES.md": "7957c1eeb27f73b8a82d2a92969126e2395b498fe020996e1d7fb85607f9f512",
+    "fortran/support/d1mach_modern.f": "3a4155089ee07659b254eda19f535ac6237f71b9dfe448b8e168e5e3c422db8f",
+    "fortran/support/xermsg_stub.f": "73916873dd9122b4e8b1eacb0087ef9219763b8639600dc8663dea5391cfce80",
+    "fortran/variants/dgamma_fixed.f": "ddd10558c9d6623dff8da0eb7a1cad9af2b72c85ca09a1a860f82f1f04b24b15"
+  },
+  "inputs_spec": {
+    "seed": 1,
+    "n": 2000,
+    "domains": {
+      "tiny": {
+        "n": 300,
+        "lo": 1.0446107243801513e-12,
+        "hi": 0.0008568221983790465
+      },
+      "small": {
+        "n": 400,
+        "lo": 0.0010058521622561911,
+        "hi": 0.9620114179991242
+      },
+      "mid": {
+        "n": 600,
+        "lo": 1.002009542730786,
+        "hi": 29.81283531928382
+      },
+      "large": {
+        "n": 400,
+        "lo": 30.076498557209487,
+        "hi": 170.63031509269126
+      },
+      "negative": {
+        "n": 300,
+        "lo": -28.299672093124062,
+        "hi": -1.1172030363697255e-06
+      }
+    }
+  },
+  "domain_stats": {
+    "tiny": {
+      "n": 300,
+      "pass_rate": 0.0,
+      "max_ulp": 819269318499.0,
+      "median_ulp": 9362613.0,
+      "p99_ulp": 329403904007.4599,
+      "worst_x": 1.0446107243801513e-12
+    },
+    "small": {
+      "n": 400,
+      "pass_rate": 41.5,
+      "max_ulp": 636.0,
+      "median_ulp": 8.0,
+      "p99_ulp": 436.02,
+      "worst_x": 0.0011511239380811596
+    },
+    "mid": {
+      "n": 600,
+      "pass_rate": 100.0,
+      "max_ulp": 148.0,
+      "median_ulp": 1.0,
+      "p99_ulp": 66.00999999999999,
+      "worst_x": 29.81283531928382
+    },
+    "large": {
+      "n": 400,
+      "pass_rate": 99.75,
+      "max_ulp": 1456.0,
+      "median_ulp": 109.5,
+      "p99_ulp": 982.3299999999997,
+      "worst_x": 145.16123520680372
+    },
+    "negative": {
+      "n": 300,
+      "pass_rate": 37.333333333333336,
+      "max_ulp": 318034.0,
+      "median_ulp": 37.5,
+      "p99_ulp": 214193.0399999997,
+      "worst_x": -1.1172030363697255e-06
+    }
+  },
+  "overall_pass_rate": 63.85,
+  "verdict": "STILL DEAD",
+  "original_on_same_inputs": {
+    "tiny": {
+      "pass_rate": 0.0,
+      "max_ulp": 819269318499.0
+    },
+    "small": {
+      "pass_rate": 41.75,
+      "max_ulp": 636.0
+    },
+    "mid": {
+      "pass_rate": 100.0,
+      "max_ulp": 148.0
+    },
+    "large": {
+      "pass_rate": 99.75,
+      "max_ulp": 1456.0
+    },
+    "negative": {
+      "pass_rate": 36.333333333333336,
+      "max_ulp": 318035.0
+    }
+  },
+  "exam_dirty_files": []
+}
