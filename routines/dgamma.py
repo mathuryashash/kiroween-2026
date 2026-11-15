@@ -104,6 +104,32 @@ _nalgm = None      # number of terms for ALGM Chebyshev series
 _xbig = None       # 1 / sqrt(D1MACH(3))
 _xmax_d9 = None    # max argument for D9LGMC
 
+# ---------------------------------------------------------------------------
+# Weierstrass-series constants for gamma(1+u) with small |u|
+# log(gamma(1+u)) = -EULER*u + sum_{n>=2} (-1)^n * zeta(n) * u^n / n
+# Used when the Chebyshev Clenshaw recurrence is unstable at endpoints.
+# ---------------------------------------------------------------------------
+_EULER = 0.5772156649015329  # Euler-Mascheroni constant
+_ZETA = [
+    0.0,                   # n=0 (unused)
+    0.0,                   # n=1 (unused)
+    1.6449340668482264,    # zeta(2)  = pi^2/6
+    1.2020569031595943,    # zeta(3)
+    1.0823232337111382,    # zeta(4)  = pi^4/90
+    1.0369277551433699,    # zeta(5)
+    1.0173430619844491,    # zeta(6)  = pi^6/945
+    1.0083492773819228,    # zeta(7)
+    1.0040773561979443,    # zeta(8)  = pi^8/9450
+    1.0020083928260822,    # zeta(9)
+    1.0009945751278181,    # zeta(10) = pi^10/93555
+    1.0004941886041195,    # zeta(11)
+    1.0002460865533081,    # zeta(12) = 691*pi^12/638512875
+    1.0001227133475785,    # zeta(13)
+    1.0000612481350587,    # zeta(14)
+    1.0000305882363070,    # zeta(15)
+    1.0000152822594086,    # zeta(16)
+]
+
 
 # ---------------------------------------------------------------------------
 # INITDS -- determine number of terms for a Chebyshev series
@@ -274,7 +300,35 @@ def dgamma(x):
         n = n - 1
     y = x - n            # 0 <= y < 1
     n = n - 1
-    result = 0.9375 + _dcsevl(2.0 * y - 1.0, _GAMCS, _ngam)
+
+    # Failing inputs: x=1.0446e-12 (tiny), x=1.1511e-3 (small),
+    # x=-1.1172e-6 (negative).  When y is near 0 or 1 the Clenshaw
+    # recurrence in _dcsevl is unstable (twox ~ +-2 at the Chebyshev
+    # endpoints), and the subsequent division by x (or x+1 for
+    # negative x near a pole) amplifies the absolute error by ~1/|x|.
+    # For those cases compute gamma(1+y) via the Weierstrass series
+    # log(gamma(1+u)) = -EULER*u + sum (-1)^n zeta(n) u^n/n, which
+    # converges for |u|<1 and gives near-machine-precision relative
+    # error for small |u|.  For y>0.5 use u=y-1 (near 0) and the
+    # identity gamma(1+y) = y*gamma(y) = y*gamma(1+u).
+    if y < 0.1 or y > 0.9:
+        if y < 0.5:
+            u = y              # u near 0
+        else:
+            u = y - 1.0        # u near 0 (negative)
+        s = -_EULER * u
+        term = u * u
+        for _k in range(2, 17):
+            if _k % 2 == 0:
+                s += _ZETA[_k] * term / _k
+            else:
+                s -= _ZETA[_k] * term / _k
+            term *= u
+        result = math.exp(s)
+        if y >= 0.5:
+            result = y * result  # gamma(1+y) = y * gamma(1+u)
+    else:
+        result = 0.9375 + _dcsevl(2.0 * y - 1.0, _GAMCS, _ngam)
     if n == 0:
         return result
 
