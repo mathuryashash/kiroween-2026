@@ -1,0 +1,17 @@
+GALVANI trial report for routines/dgamma.py (run 20261115T121417Z, n=2000, commit f5f2b74)
+
+Verdict: STILL DEAD (overall pass rate 63.75%).
+Per sub-domain, pass = within the allowed ULP error for that input:
+
+  tiny      port: pass   0.00%  max_ulp 819269318499   | compiled original, same inputs: pass   0.00%  max_ulp 819269318499
+  small     port: pass  41.75%  max_ulp 636   | compiled original, same inputs: pass  41.75%  max_ulp 636
+  mid       port: pass 100.00%  max_ulp 148   | compiled original, same inputs: pass 100.00%  max_ulp 148
+  large     port: pass  99.75%  max_ulp 1456   | compiled original, same inputs: pass  99.75%  max_ulp 1456
+  negative  port: pass  36.33%  max_ulp 318035   | compiled original, same inputs: pass  36.33%  max_ulp 318035
+
+The port matches the compiled original on every sub-domain, so the translation looks faithful; the failures come from the original algorithm.
+
+Worst input in each failing sub-domain (x, your value, 50-digit reference):
+  tiny      1.0446107243801513e-12     957194394764.6718        957294403226.4026
+  small     0.0011511239380811596      868.1401101765935        868.1401101766658
+  negative  -1.1172030363697255e-06    -895093.024519874        -895093.0245568982
