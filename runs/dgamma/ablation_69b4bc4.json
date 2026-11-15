@@ -1,0 +1,58 @@
+{
+  "what": "ablation of the Kiro DGAMMA port at commit 69b4bc4",
+  "date": "2026-11-15",
+  "method": "scratch copy with the round-1 Weierstrass branch disabled (`if y < 0.1 or y > 0.9:` -> `if False:`), same inputs as the held-out trial (make_inputs('dgamma', 10000, seed=7)), same ulp_error/allowed_ulp as the harness",
+  "result_pass_rate_and_max_ulp": {
+    "tiny": {
+      "kiro_port": [
+        100.0,
+        1.11
+      ],
+      "without_branch": [
+        100.0,
+        1.17
+      ]
+    },
+    "small": {
+      "kiro_port": [
+        100.0,
+        1.0
+      ],
+      "without_branch": [
+        100.0,
+        1.02
+      ]
+    },
+    "mid": {
+      "kiro_port": [
+        99.97,
+        193.7
+      ],
+      "without_branch": [
+        99.97,
+        193.7
+      ]
+    },
+    "large": {
+      "kiro_port": [
+        99.95,
+        1470.0
+      ],
+      "without_branch": [
+        99.95,
+        1470.0
+      ]
+    },
+    "negative": {
+      "kiro_port": [
+        99.67,
+        3808.1
+      ],
+      "without_branch": [
+        99.67,
+        3808.1
+      ]
+    }
+  },
+  "conclusion": "The healing comes from the one-line change x + i - 1 -> x + (i - 1). The ~30-line Weierstrass branch added in repair 1 changes nothing measurable and should be removed."
+}
