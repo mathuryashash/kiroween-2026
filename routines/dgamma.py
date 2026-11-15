@@ -315,7 +315,9 @@ def dgamma(x):
         if y < 0.5:
             u = y              # u near 0
         else:
-            u = y - 1.0        # u near 0 (negative)
+            # Failing input x=-1.1172e-6: y-1.0 suffers catastrophic
+            # cancellation. Compute u = x + 1 - n instead.
+            u = x + 1.0 - n    # equivalent to y - 1.0 but avoids cancellation
         s = -_EULER * u
         term = u * u
         for _k in range(2, 17):
@@ -351,6 +353,8 @@ def dgamma(x):
         # (level 1, warning) -- continue
         pass
 
+    # Failing inputs x=1.0446e-12, x=1.1511e-3: cancellation in (x+i-1) when x is
+    # tiny causes relative error to magnify by ~1/x. Compute x+(i-1) as a single operation.
     for i in range(1, n + 1):
-        result = result / (x + i - 1)
+        result = result / (x + (i - 1))
     return result
