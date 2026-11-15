@@ -1,0 +1,47 @@
+Precision autopsy for dgamma(1.0446107243801513e-12)
+  (the same code run twice: IEEE double vs 60-digit arithmetic; this measures rounding error only and suggests no fix)
+  result: double 957194394764.6718   60-digit run 957294403226.4026   difference 8.19e+11 ULP
+  60-digit run vs the 50-digit reference: 0.121 ULP
+  First line where a value goes bad: dgamma() line 355 with i=1
+    `result = result / (x + i - 1)`
+    result: 0.032 ULP before this line -> 8.19e+11 ULP after
+    sub-expression values on entry to that line:
+      x                     double 1.0446107243801513e-12   60-digit 1.0446107243801513e-12           0 ULP
+      i                     double 1                        60-digit 1                                0 ULP
+      x + i                 double 1.0000000000010447       60-digit 1.0000000000010446           0.492 ULP
+      result                double 0.999999999999397        60-digit 0.99999999999939703          0.032 ULP
+      x + i - 1             double 1.0447198661722723e-12   60-digit 1.0446107243801513e-12     5.4e+11 ULP   <-- digits lost here
+                            (cancellation: the result is 1.0e-12 times the size of its operands, so the operands' rounding error is magnified)
+      result / (x + i - 1)  double 957194394764.6718        60-digit 957294403226.4026         8.19e+11 ULP
+    later lines that also go bad: dgamma() line 356
+
+Precision autopsy for dgamma(0.0011511239380811596)
+  (the same code run twice: IEEE double vs 60-digit arithmetic; this measures rounding error only and suggests no fix)
+  result: double 868.1401101765935   60-digit run 868.14011017666577   difference 636 ULP
+  60-digit run vs the 50-digit reference: 0.0663 ULP
+  First line where a value goes bad: dgamma() line 355 with i=1
+    `result = result / (x + i - 1)`
+    result: 0.166 ULP before this line -> 636 ULP after
+    sub-expression values on entry to that line:
+      x                     double 0.0011511239380811596    60-digit 0.0011511239380811596            0 ULP
+      i                     double 1                        60-digit 1                                0 ULP
+      x + i                 double 1.0011511239380813       60-digit 1.0011511239380812           0.432 ULP
+      result                double 0.9993368624327753       60-digit 0.99933686243277529          0.166 ULP
+      x + i - 1             double 0.0011511239380812555    60-digit 0.0011511239380811596          442 ULP   <-- digits lost here
+                            (cancellation: the result is 1.1e-03 times the size of its operands, so the operands' rounding error is magnified)
+      result / (x + i - 1)  double 868.1401101765935        60-digit 868.14011017666577             636 ULP
+    later lines that also go bad: dgamma() line 356
+
+Precision autopsy for dgamma(-1.1172030363697255e-06)
+  (the same code run twice: IEEE double vs 60-digit arithmetic; this measures rounding error only and suggests no fix)
+  result: double -895093.0245198741   60-digit run -895093.0245568982   difference 3.18e+05 ULP
+  60-digit run vs the 50-digit reference: 0.321 ULP
+  First line where a value goes bad: dgamma() line 318
+    `u = y - 1.0`
+    u: new before this line -> 2.18e+05 ULP after
+    sub-expression values on entry to that line:
+      y        double 0.9999988827969636       60-digit 0.99999888279696363          0.416 ULP
+      y - 1.0  double -1.1172030364159369e-06  60-digit -1.1172030363697255e-6    2.18e+05 ULP   <-- digits lost here
+               (cancellation: the result is 1.1e-06 times the size of its operands, so the operands' rounding error is magnified)
+    later lines that also go bad: dgamma() line 319, dgamma() line 320, dgamma() line 355, dgamma() line 356
+
