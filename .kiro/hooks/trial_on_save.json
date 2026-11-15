@@ -2,13 +2,13 @@
   "version": "v1",
   "hooks": [
     {
-      "name": "trial-on-save-log",
-      "description": "Non-blocking: log every agent file-write to runs/guard_log.jsonl for audit.",
+      "name": "save-log",
+      "description": "Non-blocking: record every file the agent saves (runs/guard_log/, git-ignored) for the audit trail.",
       "trigger": "PostFileSave",
       "matcher": ".*",
       "action": {
         "type": "command",
-        "command": "py -3 -c \"import sys,json,os,datetime; p=os.environ.get('KIRO_FILE_PATH',''); entry=json.dumps({'t':datetime.datetime.utcnow().isoformat(),'ev':'PostFileSave','file':p}); log=os.path.join(os.getcwd(),'runs','guard_log.jsonl'); os.makedirs(os.path.dirname(log),exist_ok=True); open(log,'a').write(entry+'\\n')\""
+        "command": "py -3 tools/guard/save_log.py"
       }
     }
   ]
