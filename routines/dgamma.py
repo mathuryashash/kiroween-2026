@@ -315,9 +315,9 @@ def dgamma(x):
         if y < 0.5:
             u = y              # u near 0
         else:
-            # Failing input x=-1.1172e-6: y-1.0 suffers catastrophic
-            # cancellation. Compute u = x + 1 - n instead.
-            u = x + 1.0 - n    # equivalent to y - 1.0 but avoids cancellation
+            # Failing inputs x=0.9009, x=-5.568e-5: u must satisfy |u|<1 for
+            # Weierstrass series convergence. u = y - 1.0 when y in (0.5, 1.0).
+            u = y - 1.0
         s = -_EULER * u
         term = u * u
         for _k in range(2, 17):
