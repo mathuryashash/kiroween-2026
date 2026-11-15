@@ -294,6 +294,37 @@ def autopsy(name: str, x: float, port_path: Path | None = None, reference=None) 
         with mpmath.workdps(SHADOW_DPS):
             out["shadow_vs_reference_ulp"] = ulp_diff(float(res_s), reference(mpmath.mpf(x)))
 
+    # If the 60-digit run of the same code is ALSO far from the reference, the cause is
+    # the code's logic or formula for this input, not rounding. Show what the 60-digit
+    # run computed, assignment by assignment, in the top-level function (no fix offered).
+    if out.get("shadow_vs_reference_ulp", 0.0) > BAD_ULP or isinstance(res_s, Exception):
+        src_lines = path.read_text(encoding="utf-8").splitlines()
+        trace = []
+        top = frames.get(0, [])
+        for (i0, d0, s0), (i1, d1, s1) in zip(top, top[1:]):
+            for n, v in s1[4].items():
+                if isinstance(v, bool) or not isinstance(v, (int, float, mpmath.mpf)):
+                    continue
+                if n in s0[4] and s0[4][n] is v:
+                    continue
+                trace.append({"line": d0[2], "source": src_lines[d0[2] - 1].strip(), "var": n,
+                              "shadow": v, "double": d1[4].get(n)})
+        if not top and ev_s:
+            trace = [{"line": e[2], "source": src_lines[e[2] - 1].strip(), "var": "", "shadow": "",
+                      "double": ""} for e in ev_s[:25] if e[0] == 0]
+        # loops: keep the first assignment per (line, var) and count the repeats
+        seen, compact = {}, []
+        for t in trace:
+            key = (t["line"], t["var"])
+            if key in seen:
+                seen[key]["repeats"] += 1
+                seen[key]["last"] = t["shadow"]
+                continue
+            t["repeats"], t["last"] = 0, None
+            seen[key] = t
+            compact.append(t)
+        out["logic_trace"] = compact[:30]
+
     k, depth = 0, 0
     while k in frames and depth < MAX_DEPTH:
         deaths = _deaths(frames[k])
@@ -349,6 +380,14 @@ def format_report(a: dict) -> str:
         lines.append(f"  NOTE: control flow differs between the two runs at {dv['double']} vs {dv['shadow']}")
     if not a["chain"]:
         lines.append(f"  No line found where a value drifts more than {BAD_ULP:g} ULP from its 60-digit shadow.")
+    if a.get("logic_trace") is not None:
+        lines.append("  The 60-digit run of the same code is ALSO wrong, so this is not a rounding problem: "
+                     "the code's logic or formula is wrong for this input.")
+        lines.append("  Values assigned in the top-level function, in execution order (60-digit run):")
+        for t in a["logic_trace"]:
+            rep = (f"   (assigned {t['repeats'] + 1} times; last value {_fmt(t['last'])})"
+                   if t["repeats"] else "")
+            lines.append(f"    line {t['line']:>4}  {t['source'][:60]:<60}  {t['var']} = {_fmt(t['shadow'])}{rep}")
     for depth, c in enumerate(a["chain"]):
         ind = "  " * (depth + 1)
         state = (" with " + ", ".join(f"{n}={v}" for n, v in c["int_state"].items())) if c["int_state"] else ""

@@ -68,6 +68,27 @@ def test_drills_into_helper(tmp_path):
     assert lost == ["t - 1.0"]
 
 
+TOY_LOGIC = """import math
+
+def toy(x):
+    u = x + 3.0
+    s = 0.0
+    for k in range(1, 4):
+        s += u ** k
+    return math.exp(s) + x
+"""
+
+
+def test_logic_error_gets_logic_trace(tmp_path):
+    a = autopsy("toy", 0.5, port_path=_write(tmp_path, TOY_LOGIC), reference=lambda v: v)
+    assert a["shadow_vs_reference_ulp"] > 1e6
+    tr = a["logic_trace"]
+    assert tr[0]["var"] == "u" and float(tr[0]["shadow"]) == 3.5
+    loop = [t for t in tr if t["var"] == "s" and t["repeats"]]
+    assert loop and loop[0]["repeats"] == 2
+    assert "ALSO wrong" in format_report(a)
+
+
 def test_ulp_diff_basics():
     assert ulp_diff(1.0, mpmath.mpf(1)) == 0.0
     assert abs(ulp_diff(1.0 + 2.0 ** -52, mpmath.mpf(1)) - 1.0) < 1e-9

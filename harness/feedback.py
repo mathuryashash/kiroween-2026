@@ -31,6 +31,15 @@ def _load_port(name: str):
     return getattr(mod, name)
 
 
+def _u(v) -> str:
+    """Format a ULP figure; run JSON stores non-finite values as strings."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return str(v)
+    return "inf" if f == float("inf") else f"{f:.0f}"
+
+
 def build_feedback(run: dict) -> str:
     name = run["name"]
     ref = get_referee(name)
@@ -46,10 +55,10 @@ def build_feedback(run: dict) -> str:
     ]
     identical = True
     for d, s in run["domain_stats"].items():
-        line = f"  {d:9s} port: pass {s['pass_rate']:6.2f}%  max_ulp {s['max_ulp']:.0f}"
+        line = f"  {d:9s} port: pass {s['pass_rate']:6.2f}%  max_ulp {_u(s['max_ulp'])}"
         if d in orig:
             o = orig[d]
-            line += f"   | compiled original, same inputs: pass {o['pass_rate']:6.2f}%  max_ulp {o['max_ulp']:.0f}"
+            line += f"   | compiled original, same inputs: pass {o['pass_rate']:6.2f}%  max_ulp {_u(o['max_ulp'])}"
             identical &= (o["pass_rate"] == s["pass_rate"] and o["max_ulp"] == s["max_ulp"])
         lines.append(line)
     if orig and identical:
