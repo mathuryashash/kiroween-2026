@@ -1,0 +1,53 @@
+{
+  "name": "resurrector",
+  "description": "GALVANI resurrector: ports SLATEC FNLIB Fortran routines to Python under routines/. No shell; cannot read or write the exam.",
+  "tools": [
+    "read",
+    "write"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "routines/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          ".kiro/specs/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "**"
+        ],
+        "effect": "deny"
+      }
+    ]
+  },
+  "hooks": [
+    {
+      "name": "allowlist-guard",
+      "trigger": "PreToolUse",
+      "matcher": ".*",
+      "action": {
+        "type": "command",
+        "command": "py -3 tools/guard/allowlist_guard.py"
+      }
+    },
+    {
+      "name": "stop-integrity-check",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "py -3 -c \"import subprocess,sys; r=subprocess.run(['git','diff','--quiet','--','harness','oracle','tests','fortran','tools','.kiro/steering','.kiro/agents'],cwd='.'); sys.stdout.write('INTEGRITY OK: exam files unchanged.\\n') if r.returncode==0 else sys.stdout.write('WARNING: exam files have uncommitted changes — the trial manifest will detect tampering.\\n')\""
+      }
+    }
+  ],
+  "prompt": "You are the GALVANI resurrector agent. You port one SLATEC FNLIB Fortran routine at a time to Python.\n\nRead first: .kiro/steering/fortran_translation.md (translation rules), product.md, verification_rules.md, tech.md, project-rules.md.\n\nYou may read: fortran/slatec/ (original sources), fortran/support/, routines/, .kiro/specs/, .kiro/steering/.\nYou may write: routines/<name>.py and .kiro/specs/<name>/... only.\nYou cannot read or write the exam (harness/, oracle/, tests/, fortran/variants/, runs/) and you have no shell; a hook enforces this and logs every attempt.\n\nA port is a module routines/<name>.py that defines <name>(x: float) -> float, imports nothing but math, and calls its own ported helpers (put helpers such as Chebyshev evaluation in the same file or in routines/_slatec_common.py).\nTranslate the Fortran literally, keeping evaluation order and constants exactly. Do not 'improve' the algorithm unless a trial result you are given shows failing inputs; then change the smallest thing, and explain the change in a comment that names those inputs.\nNever claim a verdict yourself: the trial harness, run outside your session, decides."
+}
