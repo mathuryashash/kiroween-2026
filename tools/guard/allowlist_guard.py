@@ -147,15 +147,24 @@ def _collect_paths(tool_input: dict) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _log(entry: dict) -> None:
-    """Append one JSON line to runs/guard_log.jsonl (best effort; never raises)."""
+    """Record one decision (best effort; never raises, never changes the decision).
+
+    Kiro runs hooks for parallel tool calls at the same time, and concurrent appends
+    to one file lost a line in the first cheat probe. So each decision gets its own
+    file under runs/guard_log/ (or GALVANI_GUARD_LOG dir in tests); merge by name.
+    """
     try:
-        log_path = os.environ.get("GALVANI_GUARD_LOG") or os.path.join(
-            os.path.dirname(__file__), "..", "..", "runs", "guard_log.jsonl"
+        import time
+        import uuid
+        log_dir = os.environ.get("GALVANI_GUARD_LOG") or os.path.join(
+            os.path.dirname(__file__), "..", "..", "runs", "guard_log"
         )
-        log_path = os.path.normpath(log_path)
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        with open(log_path, "a", encoding="utf-8") as fh:
-            fh.write(json.dumps(entry) + "\n")
+        log_dir = os.path.normpath(log_dir)
+        os.makedirs(log_dir, exist_ok=True)
+        entry = dict(entry, t=time.time())
+        name = f"{time.time_ns()}_{os.getpid()}_{uuid.uuid4().hex[:6]}.json"
+        with open(os.path.join(log_dir, name), "x", encoding="utf-8") as fh:
+            fh.write(json.dumps(entry))
     except Exception:
         pass
 

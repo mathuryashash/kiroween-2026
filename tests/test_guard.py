@@ -34,7 +34,7 @@ WS = "d:\\hackathons\\kiroween\\repo"
 
 # Tests must never write to the real decision log in runs/.
 _ENV = dict(os.environ, GALVANI_GUARD_LOG=os.path.join(
-    os.environ.get("TEMP", os.path.dirname(__file__)), "galvani_guard_test_log.jsonl"))
+    os.environ.get("TEMP", os.path.dirname(__file__)), "galvani_guard_test_log"))
 
 
 def _run(payload: dict) -> tuple[int, str]:
@@ -343,6 +343,20 @@ def test_allow_str_replace_operations_array_routines():
 # ---------------------------------------------------------------------------
 # Fail-closed cases → exit 2
 # ---------------------------------------------------------------------------
+
+def test_parallel_decisions_all_logged(tmp_path):
+    """20 guard processes at once must leave 20 log records (first probe lost one)."""
+    env = dict(os.environ, GALVANI_GUARD_LOG=str(tmp_path))
+    payload = json.dumps({"tool_name": "fs_write",
+                          "tool_input": {"path": _p("harness/x.py")}, "cwd": WS})
+    procs = [subprocess.Popen([PYTHON, GUARD], stdin=subprocess.PIPE, env=env,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True)
+             for _ in range(20)]
+    for p in procs:
+        p.communicate(payload)
+    assert all(p.returncode == 2 for p in procs)
+    assert len(list(tmp_path.glob("*.json"))) == 20
+
 
 def test_fail_closed_malformed_json():
     code, _ = _run_raw("NOT VALID JSON {{")
