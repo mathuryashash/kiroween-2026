@@ -10,13 +10,7 @@
       {
         "capability": "fs_write",
         "match": [
-          "routines/**"
-        ],
-        "effect": "allow"
-      },
-      {
-        "capability": "fs_write",
-        "match": [
+          "routines/**",
           ".kiro/specs/**"
         ],
         "effect": "allow"
@@ -25,6 +19,10 @@
         "capability": "fs_write",
         "match": [
           "**"
+        ],
+        "exclude": [
+          "routines/**",
+          ".kiro/specs/**"
         ],
         "effect": "deny"
       }
