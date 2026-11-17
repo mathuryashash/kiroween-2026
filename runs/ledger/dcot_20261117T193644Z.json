@@ -1,0 +1,35 @@
+{
+  "name": "dcot",
+  "model": "claude-haiku-4.5",
+  "run_id": "20261117T193644Z",
+  "max_rounds": 3,
+  "credit_cap": 0.8,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000,
+    "verdict": "HEALED",
+    "file": "runs/dcot/port_20261117T193736Z.json"
+  },
+  "start_commit": "ccc4ef76ebc2856ec9101b98da3227727b74cc26",
+  "rounds": [
+    {
+      "round": 1,
+      "commit": "458ad01686e9db7907adcbefcd8403a82686d0d1",
+      "credits": 0.2545,
+      "agent_text": "hat's redundant. Let me simplify:Now let me verify the change:**Change made:**\n\nReplaced the `if y <= 0.25` block to always use Chebyshev series evaluation when `y > 0.0`, removing the `_XSML` threshold. The original port fell back to `1.0 / x` for tiny post-reduction values, which fails near \u03c0 where precision cancellation produces `y \u2248 7.4e-11`. Using the series instead leverages the accurate Chebyshev expansion designed for small arguments, computing cot correctly even after modulo reduction to the fundamental domain. The fallback `1.0 / x` is now only used when `y = 0` exactly (avoids 0/0).",
+      "trial_before": "STILL DEAD, overall 93.45%, small 100.0%, mid 100.0%, near_pi 67.2%",
+      "trial_after": "HEALED, overall 100.00%, small 100.0%, mid 100.0%, near_pi 100.0%",
+      "trial_after_file": "runs/dcot/port_20261117T193732Z.json",
+      "type": "repair"
+    }
+  ],
+  "total_credits": 0.2545,
+  "stop_reason": "healed_confirmed",
+  "result": "HEALED",
+  "final_dev_trial": "HEALED, overall 100.00%, small 100.0%, mid 100.0%, near_pi 100.0%",
+  "end": "20261117T193736Z"
+}
