@@ -1,0 +1,53 @@
+{
+  "n": 1000,
+  "seed": 11,
+  "exam_commit": "0a98b66",
+  "exam_dirty_files_at_start": [
+    "harness/ablate.py",
+    "harness/kiro_session.py",
+    "harness/loop.py",
+    "tests/fixtures/fake_agent.py",
+    "tests/test_ablate.py",
+    "tests/test_loop.py"
+  ],
+  "rows": [
+    {
+      "name": "dgamr",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 11.14,
+          "max_ulp": 493882885581.0,
+          "worst_x": 1.7993271725619778e-12
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1093.0,
+          "worst_x": 118.75738060287206
+        },
+        "negative": {
+          "pass_rate": 44.33,
+          "max_ulp": 244319.0,
+          "worst_x": -1.3395490351915118e-06
+        }
+      },
+      "original_overall": 52.2,
+      "min_domain_pass": 11.142857142857142,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 7.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0
+        }
+      },
+      "seconds": 3.8
+    }
+  ]
+}
