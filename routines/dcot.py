@@ -123,10 +123,7 @@ def dcot(x):
     y = (prodbg - ainty) + 0.625 * yrem + PI2REC * y
     ainty2 = math.floor(y)
     ainty = ainty + ainty2
-    # Repair near_pi (x≈π): y-ainty2 cancels when y≈1 (8.9e15 ULP in original).
-    # Use modulo to extract fractional part safely when y overshoots 1.0 due to rounding.
-    y = y % 1.0
-
+    y = y - ainty2
     
     # MOD(AINTY, 2.0D0)
     ifn = int(ainty) % 2
