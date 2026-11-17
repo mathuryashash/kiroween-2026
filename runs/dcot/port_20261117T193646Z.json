@@ -1,0 +1,156 @@
+{
+  "name": "dcot",
+  "impl": "port",
+  "timestamp": "20261117T193646Z",
+  "n_total": 2000,
+  "wall_time_s": 0.0919,
+  "toolchain": {
+    "gfortran": "N/A (port)",
+    "python": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+    "numpy": "2.5.4",
+    "mpmath": "1.4.1",
+    "scipy": "1.18.1"
+  },
+  "git_commit": "ccc4ef76ebc2856ec9101b98da3227727b74cc26",
+  "manifest": {
+    "harness/__init__.py": "092d423773208540b889b446aed2e76e2169efcd07e28f13b4eaac4f8084000c",
+    "harness/ablate.py": "1c5a6da5bae35be3e1856e663d4d477ab9fa3e61e9b30a27913b2950294d469d",
+    "harness/autopsy.py": "93fd06f5c5d7b841dd15c9b84ae463c8b424e4c788261907bdb45f5ae502ef28",
+    "harness/census.py": "a0da072618aae7d78c1eda11350942cce4dc1f59129b2ad16e0ccac3f41f1076",
+    "harness/driver.py": "de791ff9b4c2a585d998887c215ff6119b7f6bf59cf74379a891533d05afc751",
+    "harness/feedback.py": "1fabbc41e0d364203ef53cd2d41ed74539e4a0cb11f0dbfcde9f94c5dbaa9b40",
+    "harness/fetch.py": "ecbc2fafa4f5f4d83cbd452a4c9ba88ad4a858d93311512a5e32af3b8fd1202c",
+    "harness/kiro_session.py": "8aab7b4a1f3820013eaccc9e15ab458a4245e4bee09907e2a21367bb5f93fee7",
+    "harness/loop.py": "56fbe161eb5513cf57bcdd06eb4c579031940efb17a3bdd5915d01502b85db00",
+    "harness/parse.py": "48448e427709bcb44ea88560527e7ee161eb4cb2c94288835a051f23408337ed",
+    "harness/port_guard.py": "323ff3882c2515a61496f07b77075ebb143a470f7836cbc84130a6f856aa51f5",
+    "harness/port_runner.py": "699f4e007165e28fccd6a57432c437301d3f2f119a127d97e5e374d2d7eb5be7",
+    "harness/README.md": "75c94b27515b12500d53263295016fe3cc5426b4a104917be1ae5fa530a54c72",
+    "harness/transcription.py": "d6ae030e9356b96b494881c3475a961394399bc658226776cec27365279761f9",
+    "harness/trial.py": "fd8c2082d42d50adaafb37a15199845b252c477412e6ae28885b22779bddc730",
+    "harness/ulp.py": "9158a28f8ad516d3ad6492e65706f69aca3c5de537bb8da6f8dd557fcddd827b",
+    "harness/verdict.py": "9130e877f5d624767f9c13fe6e481fdc9bfece1354c374a7ba9c9735d2ec5bb8",
+    "oracle/__init__.py": "a3bef3370a865bde147eaab532a442561cf9a2b3903cdc8276a23c27b1f722e6",
+    "oracle/referees.py": "8cbe691dbf6eb713b43f40ec1746bb3b2db99119647000a7c436a45fd8b07087",
+    "fortran/slatec/d9aimp.f": "1345e66f3bf43d472a0efe6db181e808fde574e6eba2bdf7e7fb7b982b84d8dc",
+    "fortran/slatec/d9b0mp.f": "52983617d24ffb89ce958289ca9f16a5adea039a68b3853d201b8efc7601d610",
+    "fortran/slatec/d9b1mp.f": "e020237f01127add671ac9da349a83428832f97e9bb92cc807367804bf619078",
+    "fortran/slatec/d9lgmc.f": "0590ea082b0a5cf871a21018e11e88c4c541e1299ddc6cd4cdf7eadde9859fb3",
+    "fortran/slatec/d9pak.f": "e74aeceb132cf4665b26f19a5101cee70e2ded154ddd92183d78b49f5037f67d",
+    "fortran/slatec/d9upak.f": "f59e04f9037adc550502caa78012fed13599bc9f036e8c09cc3db1c412033c1f",
+    "fortran/slatec/dacosh.f": "1b07855a91d36c9c87deb3f991318f3b803c0c1e7b73e532f51a034e0c89f9ed",
+    "fortran/slatec/dai.f": "fc72a4ad011c1cc6d87c9ffd9d9b966c8aba63247abc9f9270faf0a431984591",
+    "fortran/slatec/daie.f": "1bad910629a06477f40e3facb2a0f3b973c594a8f0f97dceb3cafecbe95b1c77",
+    "fortran/slatec/dasinh.f": "72bc92ed458dcc1b02191c80b00c5a9f0cf1b266992bb965da71b165697a6206",
+    "fortran/slatec/datanh.f": "cf233e1cdb52f0baa590d22277edce132c5354883361b0dc47e545edc9039982",
+    "fortran/slatec/dbesi0.f": "b4a440b65f4f72ce0ea3d4140fc071e238d009fec10ae10add6b1bec0fede3c8",
+    "fortran/slatec/dbesi1.f": "1caeedb909be60a466497a4a8a7869e161bec253b984a4f3569decd1fe393a7f",
+    "fortran/slatec/dbesj0.f": "07a317016b37f4a9aeee192cef11bf041c4c145d41cb852976583aecaa1b7297",
+    "fortran/slatec/dbesj1.f": "b987dd1c79f116875dddb7b0a03cd84f9da2475e4bddadf81147fc661e3d7c1e",
+    "fortran/slatec/dbesk0.f": "1f8739474b1e92e1ae1c26d59a06d8dcdd2056db4cfa29a22d2008fe67fa7c5e",
+    "fortran/slatec/dbesk1.f": "b984d50e2c38b3269517f6d801a8a76ddc6b11b4416f0fd8d5f9f77d85b1ee42",
+    "fortran/slatec/dbesy0.f": "80f1875caf2f393090dbf936d305bf30d7192736b053fc9b0c3f8558864039b9",
+    "fortran/slatec/dbesy1.f": "176a5187115fa962b6e043c8f96c540bbc595796e749c1c017726995285412a8",
+    "fortran/slatec/dbi.f": "e0b8a985d1a843accf188b656e451db82739c021c219f1262da0489e3a85e751",
+    "fortran/slatec/dbie.f": "41e70d0c060c5aa515322d4a7f55c5e41b13c4639690a9810802a718deafde9d",
+    "fortran/slatec/dbsi0e.f": "1ba478c6c21bb6dbfb55fe5fa73be6cde82a4246db6c9afdc45b671b19d04f0d",
+    "fortran/slatec/dbsi1e.f": "c007158e783a494700e07a8451934f43ae86db3dd53fe98178cad5bf8a38b088",
+    "fortran/slatec/dbsk0e.f": "6086ba86ac3d3c761269d9dbc75a6f424cbcbb98e29584a95c4f2233e96781bf",
+    "fortran/slatec/dbsk1e.f": "31d1a562e6b924b40fd5d89f3df5c16a45d2633901d0aeb65db9f6a89d30690d",
+    "fortran/slatec/dcbrt.f": "096df2dc6db3e608082259f12fa9d5f862289e78f5cb82489aa0cf129bef692e",
+    "fortran/slatec/dcosdg.f": "ebaa8605ef7c4d931f8d97fbd2dd8c71e4dbe8f061e74e817a35d374a496e620",
+    "fortran/slatec/dcot.f": "5eef8c540370405f002b00eddf7f98237316a131775b5f7170e33984e16ec11e",
+    "fortran/slatec/dcsevl.f": "8f907d21bbad242cf415e7916a48f6db2d2793164ac6652ead83a6cbbbd3bd62",
+    "fortran/slatec/ddaws.f": "44f21a8ef13fb9f8c17bc77f524dc4bc5e61d92d03841900e45836211bfcf8ac",
+    "fortran/slatec/de1.f": "9be9b707a9a8f974eb283207f26deab7f53a31bcc1ae585cb03bd3b1598e288b",
+    "fortran/slatec/dei.f": "cab4235d827aaad4cebc1431961279c443fe000add61481464d64336e8bb97f3",
+    "fortran/slatec/derf.f": "d3997603b1382bc2501b999dded3cd537990df465819c420101c143e2adce245",
+    "fortran/slatec/derfc.f": "789292ae72242e66d57d990ae77de4412e4311da1f4ca64b1a5826a0cb3b2359",
+    "fortran/slatec/dexprl.f": "1507ed7c1cf87db38995a6047db1feb332bf23817dc97d8a9449daf0fb8bb8e8",
+    "fortran/slatec/dgamlm.f": "f392908f1fc8f0c3558a59d439936471714f5ecd26bf3957c9761c552103e3a3",
+    "fortran/slatec/dgamma.f": "6ed1d9ce1b8bb014e3736796d51c14709b2dd14fa789fd32fdc963ac90954426",
+    "fortran/slatec/dgamr.f": "6e4ad8c03c1e2528b894d3c43d0be86044cb26b8ef9a4ef9aad0596492858ddd",
+    "fortran/slatec/dlgams.f": "beca401c91fed89b6d8b3588aa370c5b773daa57f6f2b639c2b1dfdfd50edaa7",
+    "fortran/slatec/dli.f": "597bc07e99e378fb7482599aff1bb037692a24fdd9d1c55f33591ba362a64e24",
+    "fortran/slatec/dlngam.f": "0be36b841a0f5f3a966793ae33a13b4c8a9f64aaf5de3e957d3ece2da854bd3b",
+    "fortran/slatec/dlnrel.f": "3cddf7c89cfcf965c305a50058b93a1e1ffbebeb43a8cd936ab7abefa4652755",
+    "fortran/slatec/dpsi.f": "d92f9179612d49a56eda35349764905aa97e2c6564cb9079aa7296d16daee448",
+    "fortran/slatec/dsindg.f": "1f884dcaf5835d19f43dd03700d6ee85bce526236ced3207428b3adb2c3d74f0",
+    "fortran/slatec/dspenc.f": "dfd7853131ce5c2907b1ba33eb5566266897bf4f4466546df5effde759d2ab62",
+    "fortran/slatec/initds.f": "27175c6f8b8d93c740b62d02667bf9576ce03c114db61abd53755504d0c9f8a6",
+    "fortran/slatec/SOURCES.md": "b6ffde31188ca6dda2df7ccfe4afba38ff49f51f9b1b70416b81cf310c35e2b2",
+    "fortran/slatec/xerclr.f": "1e089eb2595d8e24d52a5375cafadfef43379d00e1e1e911f679b3604777e779",
+    "fortran/slatec/xgetf.f": "b0276ed9175ca664862fda5c298b32d05ef89531454c56052d9ad8968936e284",
+    "fortran/slatec/xsetf.f": "042e868c6ea1a9930fff9367a1742873ec1c1ad39603817fc7443ef2938deeff",
+    "fortran/support/d1mach_modern.f": "3a4155089ee07659b254eda19f535ac6237f71b9dfe448b8e168e5e3c422db8f",
+    "fortran/support/i1mach_modern.f": "03d00cb67b335db751614cfdfe881387b6851c69fec79c37a6e56aac1b676aa9",
+    "fortran/support/j4save_stub.f": "b827252a96b58149e0a0fcbd62fd7f07abba6053f6e36260d09facdf983bffa2",
+    "fortran/support/r1mach_modern.f": "6d7bb85e2d46b565b68fc3716cea23aec015b5d16f8bf9b86e5faa9ed0e7daa9",
+    "fortran/support/xermsg_stub.f": "10ecf6c6e38465f78a2bf3f374b50e232d9027aaf1810e277113723228bf3b43",
+    "fortran/variants/dgamma_fixed.f": "ddd10558c9d6623dff8da0eb7a1cad9af2b72c85ca09a1a860f82f1f04b24b15"
+  },
+  "inputs_spec": {
+    "seed": 1,
+    "n": 2000,
+    "domains": {
+      "small": {
+        "n": 800,
+        "lo": 1.0196407400016126e-10,
+        "hi": 0.8788891212146676
+      },
+      "mid": {
+        "n": 800,
+        "lo": 1.0040855639564683,
+        "hi": 991.4471087374691
+      },
+      "near_pi": {
+        "n": 400,
+        "lo": 3.141592653692525,
+        "hi": 3.151020980505687
+      }
+    }
+  },
+  "domain_stats": {
+    "small": {
+      "n": 800,
+      "pass_rate": 100.0,
+      "max_ulp": 3.0,
+      "median_ulp": 0.0,
+      "p99_ulp": 2.0,
+      "worst_x": 0.8422366226625764
+    },
+    "mid": {
+      "n": 800,
+      "pass_rate": 100.0,
+      "max_ulp": 591.0,
+      "median_ulp": 2.0,
+      "p99_ulp": 160.08999999999992,
+      "worst_x": 4.715535643392624
+    },
+    "near_pi": {
+      "n": 400,
+      "pass_rate": 67.25,
+      "max_ulp": 8986332104567688.0,
+      "median_ulp": 972231.5,
+      "p99_ulp": 8650187471048027.0,
+      "worst_x": 3.141592653706479
+    }
+  },
+  "overall_pass_rate": 93.45,
+  "verdict": "STILL DEAD",
+  "original_on_same_inputs": {
+    "small": {
+      "pass_rate": 100.0,
+      "max_ulp": 3.0
+    },
+    "mid": {
+      "pass_rate": 100.0,
+      "max_ulp": 591.0
+    },
+    "near_pi": {
+      "pass_rate": 67.25,
+      "max_ulp": 8986332104567688.0
+    }
+  },
+  "exam_dirty_files": []
+}
