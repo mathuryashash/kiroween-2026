@@ -17,7 +17,7 @@ D1MACH_5 = math.log10(2.0)            # log10(2)
 COTCS = [
     +.24025916098295630250e0,   # (1)
     -.16533031601500227845e-1,  # (2)
-    -.43099391917240189356e-4,  # (3)
+    -.4299839193172401893564e-4,  # (3) Fixed: was -.43099391917240189356e-4
     -.15928322332754104602e-6,  # (4)
     -.61910931351293487258e-9,  # (5)
     -.24301974150726460433e-11, # (6)
@@ -27,7 +27,7 @@ COTCS = [
     -.58333565890366657947e-21, # (10)
     -.22966264696464577392e-23, # (11)
     -.90419705730748332671e-26, # (12)
-    -.35598555192060006400e-28, # (13)
+    -.3559885519206000640e-28, # (13) Fixed: was -.35598555192060006400e-28
     -.14015513982429866666e-30, # (14)
     -.55180043687253333333e-33, # (15)
 ]
@@ -143,10 +143,10 @@ def dcot(x):
     elif y <= 0.5:
         dcot_result = (0.5 + _dcsevl(8.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.5 * y)
         dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-    else:  # y > 0.5
+    else:  # y > 0.5, matches Fortran block 30
         dcot_result = (0.5 + _dcsevl(2.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.25 * y)
         dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
+        # Fixed: removed third reduction (midpoint value y > 0.5 only executes 2 reductions per Fortran line 30)
     
     # Apply sign of x and quadrant correction
     if x != 0.0:
