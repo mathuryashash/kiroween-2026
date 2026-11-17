@@ -135,6 +135,12 @@ def dcot(x):
         # ANSWER LT HALF PRECISION, ABS(X) TOO BIG OR X NEAR N*PI
         pass
     
+    # Failing inputs: 0.8788891212146676, 102.10073472054727, 3.141592653706479
+    # Map Y to [0, 0.5] using the quadrant info; this prevents catastrophic cancellation
+    # when Y is close to 1.0 after argument reduction.
+    if ifn == 1:
+        y = 1.0 - y
+    
     # Branch on reduced y value
     if y <= 0.25:
         dcot_result = 1.0 / x
