@@ -127,6 +127,14 @@ def build_autopsy(name: str, xs: list) -> str:
     return "\n".join(parts)
 
 
+def build_transcription(name: str) -> str:
+    from harness.transcription import check, format_report
+    try:
+        return format_report(name, check(name))
+    except Exception as exc:
+        return f"transcription check failed: {type(exc).__name__}: {exc}\n"
+
+
 def build_ablation(name: str, before_rev: str, after_rev: str) -> str:
     from harness.ablate import ablate, format_report
     try:
@@ -150,6 +158,15 @@ def _regressions(before: dict, after: dict) -> list[str]:
     for d, s in after["domain_stats"].items():
         b = before["domain_stats"].get(d)
         if b is not None and s["pass_rate"] < b["pass_rate"] - FAIL_DROP:
+            out.append(f"{d} {b['pass_rate']:.2f}% -> {s['pass_rate']:.2f}%")
+    return out
+
+
+def _gains(before: dict, after: dict) -> list[str]:
+    out = []
+    for d, s in after["domain_stats"].items():
+        b = before["domain_stats"].get(d)
+        if b is not None and s["pass_rate"] > b["pass_rate"] + FAIL_DROP:
             out.append(f"{d} {b['pass_rate']:.2f}% -> {s['pass_rate']:.2f}%")
     return out
 
@@ -293,10 +310,14 @@ def _cap(text: str, limit: int) -> str:
 
 
 def repair_prompt(name: str, k: int, max_rounds: int, history: str, feedback: str,
-                  autopsy: str, ablation: str) -> str:
+                  autopsy: str, ablation: str, transcription: str = "") -> str:
     # The prompt travels as one command-line argument (Windows limit 32,767 characters).
     history, autopsy, ablation = _cap(history, 6000), _cap(autopsy, 9000), _cap(ablation, 5000)
     p = [f"GALVANI evidence for routines/{name}.py, repair round {k} of at most {max_rounds}."]
+    if transcription:
+        p += ["", "TRANSCRIPTION CHECK (constants in your port compared with the DATA statements of "
+              "the Fortran original; a copying error makes every later diagnosis unreliable, so "
+              "fix these first):", _cap(transcription, 3000).rstrip()]
     if history:
         p += ["", "WHAT HAPPENED IN EARLIER ROUNDS (your own changes and their trial results):", history]
     p += ["", "TRIAL REPORT (the harness ran the port on its dev inputs):", feedback.rstrip()]
@@ -321,7 +342,7 @@ def repair_prompt(name: str, k: int, max_rounds: int, history: str, feedback: st
 def _round_history(name: str, rounds: list) -> str:
     out = []
     for r in rounds:
-        if r.get("type") not in ("repair", "reverted", "rejected", "no_diff"):
+        if r.get("type") not in ("repair", "reverted", "rejected", "no_diff", "no_gain"):
             continue
         line = f"Round {r['round']}: "
         if r["type"] == "no_diff":
@@ -329,7 +350,8 @@ def _round_history(name: str, rounds: list) -> str:
             continue
         line += {"repair": "kept.", "reverted": "UNDONE because it made the port worse: "
                  + "; ".join(r.get("regressions", [])),
-                 "rejected": "UNDONE by the overfit guard: " + "; ".join(r.get("overfit", []))}[r["type"]]
+                 "rejected": "UNDONE by the overfit guard: " + "; ".join(r.get("overfit", [])),
+                 "no_gain": "UNDONE because no sub-domain improved"}[r["type"]]
         if r.get("trial_after"):
             line += f" Trial after it: {r['trial_after']}."
         diff = _git("diff", f"{r['commit']}^", r["commit"], "--", f"routines/{name}.py", check=False)
@@ -426,8 +448,9 @@ def loop(name: str, model: str = "claude-haiku-4.5", max_rounds: int = 4, credit
         feedback = build_feedback(trial)
         autopsy = build_autopsy(name, xs) if xs else ""
         ablation = build_ablation(name, *last_change) if last_change else ""
+        transcription = build_transcription(name)
         prompt = repair_prompt(name, k, max_rounds, _round_history(name, ledger["rounds"]),
-                               feedback, autopsy, ablation)
+                               feedback, autopsy, ablation, transcription)
         if dry_run:
             print(f"[loop] DRY RUN, round {k} prompt:\n" + prompt)
             stop("dry_run")
@@ -487,9 +510,17 @@ def loop(name: str, model: str = "claude-haiku-4.5", max_rounds: int = 4, credit
             new, new_path = trial_port(name, *DEV, label=f"round {k} dev")
             print(f"[loop] round {k} dev trial: {_trial_line(new)}", flush=True)
             regs = _regressions(trial, new) if new["verdict"] not in ("VOID",) else ["trial VOID"]
+            gains = _gains(trial, new)
             entry["trial_after"] = _trial_line(new)
             entry["trial_after_file"] = str(new_path.relative_to(REPO_ROOT)).replace("\\", "/")
-            if regs:
+            if not regs and not gains and not _is_success(new):
+                # Keep only changes that measurably help: a change with no gain moves the port
+                # away from the literal translation without evidence that it is needed.
+                r = _restore_port(name, before_rev, f"{name} round {k} undone: no sub-domain improved")
+                ledger["rounds"].append({**entry, "type": "no_gain", "undo_commit": r})
+                last_change = (before_rev, c)
+                fails_in_row += 1
+            elif regs:
                 r = _restore_port(name, before_rev, f"{name} round {k} undone: it made the port "
                                   f"worse ({'; '.join(regs)[:150]})")
                 ledger["rounds"].append({**entry, "type": "reverted", "regressions": regs, "undo_commit": r})

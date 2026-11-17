@@ -42,6 +42,7 @@ def repo(tmp_path, monkeypatch):
     monkeypatch.setattr(L, "build_feedback", lambda t: "FEEDBACK: tiny fails\n")
     monkeypatch.setattr(L, "build_autopsy", lambda name, xs: f"AUTOPSY of {xs}\n")
     monkeypatch.setattr(L, "build_ablation", lambda name, a, b: f"ABLATION {a[:7]}..{b[:7]}\n")
+    monkeypatch.setattr(L, "build_transcription", lambda name: "")
     return r
 
 
@@ -142,8 +143,17 @@ def test_no_diff_twice_stops(repo, tmp_path, monkeypatch):
     assert led["stop_reason"] == "no_diff_twice" and len(led["rounds"]) == 2
 
 
+def test_round_without_gain_is_undone_and_two_stop_the_loop(repo, tmp_path, monkeypatch):
+    steps = [{"edit": ["t = 2.0", "t = 2.0 "]}, {"edit": ["s = x", "s =  x"]}, {"say": "unused"}]
+    led, st, _ = run(repo, tmp_path, monkeypatch, steps)
+    assert [r["type"] for r in led["rounds"]] == ["no_gain", "no_gain"]
+    assert led["stop_reason"] == "two_failed_rounds_in_a_row" and len(st["prompts"]) == 2
+    assert (repo / "routines" / "toy.py").read_text(encoding="utf-8") == BUGGY
+    assert "UNDONE because no sub-domain improved" in st["prompts"][1]
+
+
 def test_credit_cap_stops_before_overspending(repo, tmp_path, monkeypatch):
-    steps = [{"edit": ["t = 2.0", "t = 2.0 "], "credits": 1.0}] * 5
+    steps = [{"edit": ["t = 2.0", "t = 2.0 "], "credits": 1.5}] * 5
     led, _, _ = run(repo, tmp_path, monkeypatch, steps, credit_cap=2.5, max_rounds=5)
     assert led["stop_reason"].startswith("credit_cap") and led["total_credits"] <= 2.5
 
@@ -176,6 +186,13 @@ def test_blind_port_then_repair(repo, tmp_path, monkeypatch):
     assert led["stop_reason"] == "healed_confirmed"
     first = json.loads(s.read_text(encoding="utf-8"))["prompts"][0]
     assert "Translate literally" in first and "x + (1 - 1)" not in first
+
+
+def test_transcription_errors_lead_the_prompt(repo, tmp_path, monkeypatch):
+    monkeypatch.setattr(L, "build_transcription", lambda name: "1 of 2 DATA constants differ: CS(3)\n")
+    _, st, _ = run(repo, tmp_path, monkeypatch, [{"edit": ["x + 1 - 1", "x + (1 - 1)"]}])
+    p = st["prompts"][0]
+    assert p.index("TRANSCRIPTION CHECK") < p.index("TRIAL REPORT") and "CS(3)" in p
 
 
 def test_prompts_carry_no_fix_hint():
