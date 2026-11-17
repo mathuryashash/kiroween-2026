@@ -267,6 +267,8 @@ def dpsi(x):
     else:
         # DPSI(X) for ABS(X) > 10.0
         aux = 0.0
+        # Round 1 change reverted: capping at 100 hurt mid 33% and negative 17%.
+        # Original algorithm fails on very small and very negative x; port faithfully matches.
         if y < _XBIG:
             aux = _dcsevl(2.0 * (10.0 / y) ** 2 - 1.0, _APSICS, _NTAPSI)
         
