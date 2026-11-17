@@ -1,0 +1,101 @@
+GALVANI evidence for routines/dcot.py, repair round 3 of at most 4.
+
+WHAT HAPPENED IN EARLIER ROUNDS (your own changes and their trial results):
+Round 1: kept. Trial after it: STILL DEAD, overall 72.95%, small 99.8%, mid 49.0%, near_pi 67.2%.
+Your diff in that round:
+@@ -17,7 +17,7 @@ D1MACH_5 = math.log10(2.0)            # log10(2)
+-    -.43099391917240189356e-4,  # (3)
++    -.4299839193172401893564e-4,  # (3) Fixed: was -.43099391917240189356e-4
+@@ -27,7 +27,7 @@ COTCS = [
+-    -.35598555192060006400e-28, # (13)
++    -.3559885519206000640e-28, # (13) Fixed: was -.35598555192060006400e-28
+@@ -143,10 +143,10 @@ def dcot(x):
+-    else:  # y > 0.5
++    else:  # y > 0.5, matches Fortran block 30
+-        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
++        # Fixed: removed third reduction (midpoint value y > 0.5 only executes 2 reductions per Fortran line 30)
+Round 2: kept. Trial after it: STILL DEAD, overall 93.45%, small 100.0%, mid 100.0%, near_pi 67.2%.
+Your diff in that round:
+@@ -143,10 +143,10 @@ def dcot(x):
+-    else:  # y > 0.5, matches Fortran block 30
++    else:  # y > 0.5
+-        # Fixed: removed third reduction (midpoint value y > 0.5 only executes 2 reductions per Fortran line 30)
++        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
+
+TRIAL REPORT (the harness ran the port on its dev inputs):
+GALVANI trial report for routines/dcot.py (run 20261117T192834Z, n=2000, commit e96d3b7)
+
+Verdict: STILL DEAD (overall pass rate 93.45%).
+Per sub-domain, pass = within the allowed ULP error for that input:
+
+  small     port: pass 100.00%  max_ulp 3   | compiled original, same inputs: pass 100.00%  max_ulp 3
+  mid       port: pass 100.00%  max_ulp 591   | compiled original, same inputs: pass 100.00%  max_ulp 591
+  near_pi   port: pass  67.25%  max_ulp 8986332104567688   | compiled original, same inputs: pass  67.25%  max_ulp 8986332104567688
+
+The port matches the compiled original on every sub-domain, so the translation looks faithful; the failures come from the original algorithm.
+
+Worst input in each failing sub-domain (x, your value, 50-digit reference):
+  near_pi   3.141592653706479          0.3183098861719679       8570034127.141438
+
+PRECISION AUTOPSY of the worst failing inputs. The same code runs twice, in IEEE double and in 60-digit arithmetic. The report names the first line where a value drifts away from its 60-digit shadow (a rounding cause), or, when the 60-digit run is wrong too, lists what each assignment computed (a logic cause):
+Precision autopsy for dcot(3.141592653706479)
+  (the same code run twice: IEEE double vs 60-digit arithmetic; this measures rounding error only and suggests no fix)
+  result: double 0.3183098861719679   60-digit run 0.31830988617196794   difference 0.309 ULP
+  60-digit run vs the 50-digit reference: 8.99e+15 ULP
+  The 60-digit run of the same code is ALSO wrong, so this is not a rounding problem: the code's logic or formula is wrong for this input.
+  Values assigned in the top-level function, in execution order (60-digit run):
+    line  105  y = abs(x)                                                    y = 3.1415926537064789
+    line  119  ainty = math.floor(y)                                         ainty = 3
+    line  120  yrem = y - ainty                                              yrem = 0.14159265370647889
+    line  121  prodbg = 0.625 * ainty                                        prodbg = 1.875
+    line  122  ainty = math.floor(prodbg)                                    ainty = 1
+    line  123  y = (prodbg - ainty) + 0.625 * yrem + PI2REC * y              y = 1.0000000000742844
+    line  124  ainty2 = math.floor(y)                                        ainty2 = 1
+    line  125  ainty = ainty + ainty2                                        ainty = 2
+    line  126  y = y - ainty2                                                y = 7.4284390044379876e-11
+    line  129  ifn = int(ainty) % 2                                          ifn = 0
+    line  140  dcot_result = 1.0 / x                                         dcot_result = 0.31830988617196794
+    line  153  dcot_result = math.copysign(dcot_result, x)                   dcot_result = 0.31830988617196794
+  First line where a value goes bad: dcot() line 126 with ainty2=1
+    `y = y - ainty2`
+    y: 0.151 ULP before this line -> 2.6e+09 ULP after
+    sub-expression values on entry to that line:
+      y           double 1.0000000000742844       60-digit 1.0000000000742844           0.151 ULP
+      ainty2      double 1                        60-digit 1                                0 ULP
+      y - ainty2  double 7.428435644385445e-11    60-digit 7.4284390044379876e-11     2.6e+09 ULP   <-- digits lost here
+                  (cancellation: the result is 7.4e-11 times the size of its operands, so the operands' rounding error is magnified)
+
+ABLATION of your previous change (each hunk undone on its own, then trialled):
+Ablation analysis: dcot from e3b5779 to e96d3b7
+  (n=300, seed=1)
+
+Pass rate per sub-domain, before your change -> after it:
+  small         99.17% -> 100.00%
+  mid           40.83% -> 100.00%
+  near_pi       61.67% ->  61.67%
+
+Per-hunk effects (what happens when each hunk is reverted):
+
+Hunk 0 (1-, 1+):
+@@ line 146 @@
+-    else:  # y > 0.5, matches Fortran block 30
++    else:  # y > 0.5
+
+  Effects when this hunk is REVERTED:
+    small        baseline 100.00% -> without this hunk 100.00% (neutral)
+    mid          baseline 100.00% -> without this hunk 100.00% (neutral)
+    near_pi      baseline  61.67% -> without this hunk  61.67% (neutral)
+  -> This hunk is NEUTRAL or MIXED
+
+Hunk 1 (1-, 1+):
+@@ line 149 @@
+-        # Fixed: removed third reduction (midpoint value y > 0.5 only executes 2 reductions per Fortran line 30)
++        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
+
+  Effects when this hunk is REVERTED:
+    small        baseline 100.00% -> without this hunk  99.17% (hurt -0.8%)
+    mid          baseline 100.00% -> without this hunk  40.83% (hurt -59.2%)
+    near_pi      baseline  61.67% -> without this hunk  61.67% (neutral)
+  -> This hunk HELPS (reverting it hurts 2 domain(s))
+
+Task: using this evidence, repair routines/dcot.py with str_replace edits only. Keep what the report shows is working; undo or correct what the evidence shows is broken. Prefer the smallest edit and remove code that is not needed. Do not special-case the inputs shown above: a held-out trial on inputs you have not seen decides the verdict. Above any changed line, add a comment naming the failing inputs and the cause. Do not touch any other file. You cannot run code. When done, state the exact change and your explanation in at most 8 lines.
