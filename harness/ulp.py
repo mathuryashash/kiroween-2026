@@ -55,14 +55,11 @@ def ulp_error(got: float, ref: float) -> float:
 # ---------------------------------------------------------------------------
 
 # Map routine name -> mpmath function
-_MP_FN: dict = {}
-
 def _get_mpfn(name: str):
-    if not _MP_FN:
-        _MP_FN.update({
-            "dgamma": mpmath.gamma,
-        })
-    return _MP_FN.get(name)
+    """The referee function for a routine (one source of truth: oracle/referees.py)."""
+    from oracle.referees import REFEREES
+    ref = REFEREES.get(name)
+    return ref["mpfn"] if ref else None
 
 
 def allowed_ulp(name: str, x: float) -> float:

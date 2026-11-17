@@ -93,14 +93,9 @@ def _slatec_dep_files(routine: str) -> list[str]:
     """Return ordered list of .f files needed: support files + slatec deps.
     Uses what is already in fortran/slatec/ (fetch must have run first).
     """
-    # Parse transitive deps via prologue (same logic as fetch, but only local)
-    import re
-
-    skip = {
-        "d1mach", "i1mach", "r1mach",
-        "xermsg", "xerror", "xercnt", "xerhlt", "xerprn",
-        "xersve", "j4save", "fdump", "xgetua",
-    }
+    # Transitive deps from the prologue, with the same parser as fetch (it follows
+    # continuation lines of ROUTINES CALLED; a first-line-only parse missed deps).
+    from harness.fetch import SKIP_ROUTINES as skip, _parse_deps
     visited: set[str] = set()
     order: list[str] = []
 
@@ -113,15 +108,8 @@ def _slatec_dep_files(routine: str) -> list[str]:
         for d in [VARIANTS_DIR, SLATEC_DIR]:
             p = d / f"{name}.f"
             if p.exists():
-                # recurse into deps
-                with open(p, encoding="utf-8", errors="replace") as fh:
-                    for line in fh:
-                        m = re.search(r"ROUTINES CALLED\s+(.*)", line, re.IGNORECASE)
-                        if m:
-                            for dep in re.split(r"[,\s]+", m.group(1)):
-                                dep = dep.strip()
-                                if dep and re.match(r'^[A-Z][A-Z0-9_]{0,30}$', dep, re.IGNORECASE):
-                                    collect(dep.lower())
+                for dep in _parse_deps(p):
+                    collect(dep)
                 if str(p) not in order:
                     order.append(str(p))
                 return
@@ -163,6 +151,8 @@ def build_driver(
     # Support files
     support_files = [
         str(SUPPORT_DIR / "d1mach_modern.f"),
+        str(SUPPORT_DIR / "i1mach_modern.f"),
+        str(SUPPORT_DIR / "r1mach_modern.f"),
         str(SUPPORT_DIR / "xermsg_stub.f"),
     ]
 
