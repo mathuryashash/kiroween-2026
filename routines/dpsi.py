@@ -267,8 +267,7 @@ def dpsi(x):
     else:
         # DPSI(X) for ABS(X) > 10.0
         aux = 0.0
-        # Failing input x=-679.0002093075524: skip aux for y > 100 to avoid _dcsevl error
-        if y < min(_XBIG, 100.0):
+        if y < _XBIG:
             aux = _dcsevl(2.0 * (10.0 / y) ** 2 - 1.0, _APSICS, _NTAPSI)
         
         pi = 3.1415926535897932385e+0
