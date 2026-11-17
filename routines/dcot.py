@@ -126,10 +126,9 @@ def dcot(x):
     y = y - ainty2
     
     # MOD(AINTY, 2.0D0)
-    # Failing inputs: 0.8788891212146676, 102.10073472054727, 3.141592653706479
-    # The ifn flag should gate quadrant reflection AFTER computing the core result,
-    # not modify y before it. This preserves precision in the argument reduction.
     ifn = int(ainty) % 2
+    if ifn == 1:
+        y = 1.0 - y
     
     # Precision warning
     if abs(x) > 0.5 and y < abs(x) * _SQEPS:
@@ -137,20 +136,17 @@ def dcot(x):
         pass
     
     # Branch on reduced y value
-    # Failing inputs: 0.8788891212146676, 102.10073472054727, 3.141592653706479
-    # Do NOT modify y before branching based on ifn; that causes precision loss.
-    # The quadrant info (ifn) only affects the sign of the final result.
-    if y > 0.5:
-        dcot_result = (0.5 + _dcsevl(2.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.25 * y)
-        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-    elif y > 0.25:
-        dcot_result = (0.5 + _dcsevl(8.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.5 * y)
-        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-    else:
+    if y <= 0.25:
         dcot_result = 1.0 / x
         if y > _XSML:
             dcot_result = (0.5 + _dcsevl(32.0 * y * y - 1.0, COTCS, _NTERMS)) / y
+    elif y <= 0.5:
+        dcot_result = (0.5 + _dcsevl(8.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.5 * y)
+        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
+    else:  # y > 0.5
+        dcot_result = (0.5 + _dcsevl(2.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.25 * y)
+        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
+        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
     
     # Apply sign of x and quadrant correction
     if x != 0.0:
