@@ -123,12 +123,7 @@ def dcot(x):
     y = (prodbg - ainty) + 0.625 * yrem + PI2REC * y
     ainty2 = math.floor(y)
     ainty = ainty + ainty2
-    # Repair near_pi: x≈π causes y≈1, and y-ainty2 cancels catastrophically (8.9e15 ULP).
-    # Recompute as 1.0 - (1.0 - y) when close to 1.0 to preserve precision.
-    if y > 0.99999:
-        y = 1.0 - (1.0 - y)
-    else:
-        y = y - ainty2
+    y = y - ainty2
     
     # MOD(AINTY, 2.0D0)
     ifn = int(ainty) % 2
