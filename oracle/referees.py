@@ -36,7 +36,8 @@ try:
         "de1": lambda x: _sp.exp1(x) if x > 0 else -_sp.expi(-x),
         "dei": _sp.expi, "dexprl": _sp.exprel, "dgamr": _sp.rgamma, "dlngam": _sp.gammaln,
         "dlnrel": _sp.log1p, "dpsi": _sp.psi,
-        "dspenc": lambda x: _sp.spence(1.0 - x) if x <= 1.0 else float("nan"),
+        # No DSPENC entry: SciPy's spence(z) is Li2(1 - z), so calling it for Li2(x) needs
+        # 1 - x, which itself loses x's digits for small x. That error would be ours, not SciPy's.
     })
 except ImportError:
     pass
