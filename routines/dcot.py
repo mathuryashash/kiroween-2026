@@ -137,9 +137,12 @@ def dcot(x):
     
     # Branch on reduced y value
     if y <= 0.25:
-        dcot_result = 1.0 / x
-        if y > _XSML:
+        # Use Chebyshev series when y is small, even below XSML after modulo reduction
+        # (failing input x near pi: y becomes 7.4e-11; must use series not 1/x)
+        if y > 0.0:
             dcot_result = (0.5 + _dcsevl(32.0 * y * y - 1.0, COTCS, _NTERMS)) / y
+        else:
+            dcot_result = 1.0 / x
     elif y <= 0.5:
         dcot_result = (0.5 + _dcsevl(8.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.5 * y)
         dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
