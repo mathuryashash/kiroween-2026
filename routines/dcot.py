@@ -143,10 +143,10 @@ def dcot(x):
     elif y <= 0.5:
         dcot_result = (0.5 + _dcsevl(8.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.5 * y)
         dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-    else:  # y > 0.5, matches Fortran block 30
+    else:  # y > 0.5
         dcot_result = (0.5 + _dcsevl(2.0 * y * y - 1.0, COTCS, _NTERMS)) / (0.25 * y)
         dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
-        # Fixed: removed third reduction (midpoint value y > 0.5 only executes 2 reductions per Fortran line 30)
+        dcot_result = (dcot_result * dcot_result - 1.0) * 0.5 / dcot_result
     
     # Apply sign of x and quadrant correction
     if x != 0.0:
