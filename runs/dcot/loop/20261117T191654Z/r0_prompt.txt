@@ -1,0 +1,3 @@
+Port the SLATEC FNLIB routine DCOT to Python as routines/dcot.py.
+
+Read the steering files in .kiro/steering/ first, then fortran/slatec/dcot.f and every routine it calls (in fortran/slatec/ or fortran/support/). Translate literally, as the steering rules say: same evaluation order, same constants, same branches. Do not improve the algorithm. routines/dcot.py must define dcot(x: float) -> float and import nothing but math; put the helpers it needs (series evaluation, initialisation, machine constants) in the same file. You cannot run code: a trial harness outside your session will judge the port. When done, say in at most 8 lines what you translated.
