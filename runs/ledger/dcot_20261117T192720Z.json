@@ -1,0 +1,55 @@
+{
+  "name": "dcot",
+  "model": "claude-haiku-4.5",
+  "run_id": "20261117T192720Z",
+  "max_rounds": 4,
+  "credit_cap": 1.8,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000
+  },
+  "start_commit": "94ea2c1eb10a97b8c06bd40b238be46335359913",
+  "rounds": [
+    {
+      "round": 1,
+      "commit": "45219eb286edc3d08b8eb3aaf813552beb95de99",
+      "credits": 0.2234,
+      "agent_text": "006e-29` (currently `-3.559855519206001e-29`)\n3. Remove the third reduction iteration in the `y > 0.5` branchNow fix the logic: remove the third reduction iteration in the `y > 0.5` branch.**Summary:**\n\nFixed two transcription errors in COTCS constants (indices 3 and 13) and removed the spurious third reduction iteration in the `y > 0.5` branch. The autopsy showed the code logic was executing an extra reduction step that doesn't exist in the original Fortran block 30, causing catastrophic cancellation and massive ULP errors. Fortran executes exactly two reductions there; now the port does too.",
+      "trial_before": "STILL DEAD, overall 9.50%, small 23.8%, mid 0.0%, near_pi 0.0%",
+      "trial_after": "STILL DEAD, overall 72.95%, small 99.8%, mid 49.0%, near_pi 67.2%",
+      "trial_after_file": "runs/dcot/port_20261117T192800Z.json",
+      "type": "repair"
+    },
+    {
+      "round": 2,
+      "commit": "e96d3b78ac03e604d60e71c1860c874b02e476b3",
+      "credits": 0.17,
+      "agent_text": "nk 0).\n\nLet me read the current file and make the repair:Now I'll undo Hunk 3 (restore the third reduction line) while keeping Hunk 0 (the beneficial constant fix):Let me fix the parameter name:**Change made:** Restored the third reduction line in the `y > 0.5` branch (Hunk 3 reverted). The ablation showed that removing it hurt mid domain by \u221259.2%, while restoring it improves mid from 40.83% to ~100% and keeps near_pi at 61.67%. The beneficial constant fix (Hunk 0) remains. The three reduction operations correctly implement the Fortran logic for the `y > 0.5` case per line 30 of the original.",
+      "trial_before": "STILL DEAD, overall 72.95%, small 99.8%, mid 49.0%, near_pi 67.2%",
+      "trial_after": "STILL DEAD, overall 93.45%, small 100.0%, mid 100.0%, near_pi 67.2%",
+      "trial_after_file": "runs/dcot/port_20261117T192834Z.json",
+      "type": "repair"
+    },
+    {
+      "round": 3,
+      "type": "no_diff",
+      "commit": "3754a19b59d824b4c4bb2bb7f4f5dd40735e5307",
+      "credits": 0.0916
+    },
+    {
+      "round": 4,
+      "type": "no_diff",
+      "commit": "741416bbf54ff4394407667875dcd1ad0df94b60",
+      "credits": 0.0891
+    }
+  ],
+  "total_credits": 0.5741,
+  "stop_reason": "no_diff_twice",
+  "result": null,
+  "final_dev_trial": "STILL DEAD, overall 93.45%, small 100.0%, mid 100.0%, near_pi 67.2%",
+  "end": "20261117T192918Z"
+}
