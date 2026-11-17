@@ -171,6 +171,12 @@ def _gains(before: dict, after: dict) -> list[str]:
     return out
 
 
+def _matches_original(trial: dict) -> bool:
+    orig = trial.get("original_on_same_inputs") or {}
+    return bool(orig) and all(d in orig and abs(s["pass_rate"] - orig[d]["pass_rate"]) <= 0.01
+                              for d, s in trial["domain_stats"].items())
+
+
 def _is_success(trial: dict) -> bool:
     if trial["verdict"] == "RESURRECTED":
         return True
@@ -309,8 +315,16 @@ def _cap(text: str, limit: int) -> str:
     return text if len(text) <= limit else text[:limit] + f"\n... ({len(text) - limit} characters cut)\n"
 
 
+STAGE_HEAL = (
+    "STAGE: the translation is done. Your port now fails exactly where the compiled original fails, "
+    "so the remaining failures are flaws of the original algorithm, and a faithful copy of a failing "
+    "original stays STILL DEAD. Your job in this round is to make the port do better than the "
+    "original on the failing inputs while keeping every passing sub-domain as it is. A port that "
+    "beats the original on its failing sub-domain and keeps the rest earns HEALED.")
+
+
 def repair_prompt(name: str, k: int, max_rounds: int, history: str, feedback: str,
-                  autopsy: str, ablation: str, transcription: str = "") -> str:
+                  autopsy: str, ablation: str, transcription: str = "", stage: str = "") -> str:
     # The prompt travels as one command-line argument (Windows limit 32,767 characters).
     history, autopsy, ablation = _cap(history, 6000), _cap(autopsy, 9000), _cap(ablation, 5000)
     p = [f"GALVANI evidence for routines/{name}.py, repair round {k} of at most {max_rounds}."]
@@ -329,6 +343,8 @@ def repair_prompt(name: str, k: int, max_rounds: int, history: str, feedback: st
     if ablation:
         p += ["", "ABLATION of your previous change (each hunk undone on its own, then trialled):",
               ablation.rstrip()]
+    if stage:
+        p += ["", stage]
     p += ["", f"Task: using this evidence, repair routines/{name}.py with str_replace edits only. "
           "Keep what the report shows is working; undo or correct what the evidence shows is broken. "
           "Prefer the smallest edit and remove code that is not needed. Do not special-case the "
@@ -449,8 +465,9 @@ def loop(name: str, model: str = "claude-haiku-4.5", max_rounds: int = 4, credit
         autopsy = build_autopsy(name, xs) if xs else ""
         ablation = build_ablation(name, *last_change) if last_change else ""
         transcription = build_transcription(name)
+        stage = STAGE_HEAL if _matches_original(trial) and not transcription else ""
         prompt = repair_prompt(name, k, max_rounds, _round_history(name, ledger["rounds"]),
-                               feedback, autopsy, ablation, transcription)
+                               feedback, autopsy, ablation, transcription, stage)
         if dry_run:
             print(f"[loop] DRY RUN, round {k} prompt:\n" + prompt)
             stop("dry_run")

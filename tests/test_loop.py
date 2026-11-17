@@ -195,8 +195,36 @@ def test_transcription_errors_lead_the_prompt(repo, tmp_path, monkeypatch):
     assert p.index("TRANSCRIPTION CHECK") < p.index("TRIAL REPORT") and "CS(3)" in p
 
 
+def test_faithful_port_is_told_to_beat_the_original(repo, tmp_path, monkeypatch):
+    inner = toy_trial(repo)
+
+    def trial(name, seed, n, label, dry=False):           # the port equals the failing original
+        res, path = inner(name, seed, n, label, dry)
+        res["original_on_same_inputs"] = {d: {"pass_rate": s["pass_rate"]} for d, s in res["domain_stats"].items()}
+        return res, path
+
+    s = script(tmp_path, [{"say": "faithful, nothing to do"}, {"say": "still nothing"}])
+    monkeypatch.setattr(L, "trial_port", trial)
+    L.loop("toy", agent_cmd=[sys.executable, str(FAKE), str(s)], start="repair")
+    assert "STAGE: the translation is done" in json.loads(s.read_text(encoding="utf-8"))["prompts"][0]
+
+
+def test_unfaithful_port_gets_no_stage_note(repo, tmp_path, monkeypatch):
+    inner = toy_trial(repo)
+
+    def trial(name, seed, n, label, dry=False):           # the port is worse than the original
+        res, path = inner(name, seed, n, label, dry)
+        res["original_on_same_inputs"] = {"tiny": {"pass_rate": 60.0}, "mid": {"pass_rate": 100.0}}
+        return res, path
+
+    s = script(tmp_path, [{"say": "x"}, {"say": "y"}])
+    monkeypatch.setattr(L, "trial_port", trial)
+    L.loop("toy", agent_cmd=[sys.executable, str(FAKE), str(s)], start="repair")
+    assert "STAGE:" not in json.loads(s.read_text(encoding="utf-8"))["prompts"][0]
+
+
 def test_prompts_carry_no_fix_hint():
-    for text in (L.blind_port_prompt("dcot"), L.repair_prompt("dcot", 1, 4, "", "F", "A", "")):
+    for text in (L.blind_port_prompt("dcot"), L.repair_prompt("dcot", 1, 4, "", "F", "A", "", "", L.STAGE_HEAL)):
         for leak in ("X+I-1", "x + (i - 1)", "DBLE(I-1)", "1.0D0/Y", "1.0/y", "X*X/SQRTPI"):
             assert leak.lower() not in text.lower()
 
