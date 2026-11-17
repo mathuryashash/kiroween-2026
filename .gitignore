@@ -23,3 +23,6 @@ Thumbs.db
 
 # NOTE: do NOT ignore .kiro/ - the hackathon rules require it at the repo root.
 runs/guard_log/
+site/test-artifacts/
+node_modules/
+site/public/

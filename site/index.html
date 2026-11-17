@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GALVANI: dead Fortran, put on trial</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="Kiro ports dead SLATEC Fortran to Python. Every port is tried against the compiled original and a 50-digit referee. It can't cheat without getting caught.">
+<style>
+:root{
+  --bg:#0d0a14; --panel:#15111f; --panel2:#1c1729; --line:#2c2440;
+  --text:#ece6f5; --muted:#a79cbd; --dim:#7d7296;
+  --dead:#ff5a5a; --healed:#ffb020; --ok:#6fe39a; --link:#c9a7ff;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font:16px/1.55 var(--sans)}
+a{color:var(--link)}
+main{max-width:1080px;margin:0 auto;padding:0 20px 64px}
+code,pre,.mono{font-family:var(--mono)}
+h2{font-size:1.35rem;margin:56px 0 6px}
+h3{font-size:1.15rem}
+.lead{color:var(--muted);max-width:68ch}
+.small{font-size:.85rem;color:var(--muted)}
+
+header.hero{padding:56px 0 28px;border-bottom:1px solid var(--line)}
+.brand{font:700 clamp(2.4rem,7vw,4rem)/1 Georgia,"Palatino Linotype",serif;letter-spacing:.06em;
+  color:#fff7ea;text-shadow:0 0 36px rgba(255,176,32,.35)}
+.tag{font-size:clamp(1.1rem,2.6vw,1.4rem);margin-top:14px;max-width:44ch}
+.tag b{color:var(--healed)}
+.hero p.lead{margin-top:12px}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:150px}
+.stat .v{font:700 1.5rem/1.2 var(--mono)}
+.stat .k{font-size:.8rem;color:var(--muted)}
+
+.ledger{display:grid;gap:12px;margin-top:16px}
+.lrow{display:grid;grid-template-columns:150px 1fr 220px;gap:14px;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-decoration:none;color:inherit}
+.lrow:hover{border-color:#4a3c6b}
+.lname{font:700 1.05rem var(--mono)}
+.badge{display:inline-block;font:700 .72rem var(--mono);letter-spacing:.06em;padding:3px 8px;border-radius:5px;
+  border:1px solid;margin-top:4px}
+.b-healed{color:var(--healed);border-color:rgba(255,176,32,.5);background:rgba(255,176,32,.08)}
+.b-dead{color:var(--dead);border-color:rgba(255,90,90,.5);background:rgba(255,90,90,.08)}
+.b-res{color:var(--ok);border-color:rgba(111,227,154,.5);background:rgba(111,227,154,.08)}
+.delta{font:600 .95rem var(--mono);text-align:right}
+.delta .from{color:var(--dead)} .delta .to{color:var(--ok)}
+@media (max-width:720px){.lrow{grid-template-columns:1fr}.delta{text-align:left}}
+
+.case{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:22px;overflow:hidden}
+.case-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
+.case-b{padding:16px 18px}
+.bars{display:grid;gap:8px;margin:6px 0 4px}
+.bar{display:grid;grid-template-columns:96px 1fr 64px;gap:10px;align-items:center;font-size:.85rem}
+.track{position:relative;height:22px;background:var(--panel2);border-radius:5px;overflow:hidden}
+.fill{position:absolute;left:0;height:11px}
+.fill.o{top:0;background:var(--dead)} .fill.p{top:11px;background:var(--ok)}
+.bar .n{font-family:var(--mono);text-align:right;font-size:.8rem;line-height:1.2}
+.legend{display:flex;gap:16px;font-size:.8rem;color:var(--muted);margin:2px 0 8px}
+.legend i{display:inline-block;width:12px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+.code2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media (max-width:820px){.code2{grid-template-columns:1fr}}
+.codebox{background:#0a0810;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.codebox .cap{font-size:.75rem;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line)}
+.codebox pre{font-size:.8rem;line-height:1.55;padding:8px 0;overflow-x:auto}
+.cl{display:block;padding:0 10px;white-space:pre}
+.cl .ln{display:inline-block;width:34px;color:var(--dim);user-select:none}
+.cl.bug{background:rgba(255,90,90,.13);box-shadow:inset 3px 0 var(--dead)}
+.cl.fix{background:rgba(111,227,154,.12);box-shadow:inset 3px 0 var(--ok)}
+
+table.t{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px}
+.t th,.t td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);white-space:nowrap}
+.t th{color:var(--muted);font-weight:600;font-family:var(--sans)}
+.t th:first-child,.t td:first-child{text-align:left}
+.scroll{overflow-x:auto}
+.bad{color:var(--dead)} .good{color:var(--ok)}
+
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--link);font-size:.92rem}
+ol.story{margin:10px 0 0 1.3em;font-size:.88rem}
+ol.story li{margin:6px 0}
+ol.story code{font-size:.8rem}
+.note{margin-top:14px;font-size:.85rem;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.step b{display:block;margin-bottom:4px}
+
+.lab{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,input,button{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);
+  border-radius:8px;padding:9px 12px;min-height:44px}
+input{font-family:var(--mono);width:16em;max-width:100%}
+button{cursor:pointer;border-color:#6b5a96;font-weight:600}
+button:disabled{opacity:.55;cursor:wait}
+#lab-status{margin-top:10px;font-size:.9rem;color:var(--muted);min-height:1.4em}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+footer p{margin:4px 0}
+</style>
+</head>
+<body>
+<main>
+<header class="hero">
+  <div class="brand">GALVANI</div>
+  <p class="tag">Kiro brings dead Fortran back to life, and every port stands trial. <b>It can't cheat without getting caught.</b></p>
+  <p class="lead">GALVANI has Kiro translate routines from SLATEC FNLIB, a 1980s library of special functions, into Python. Each port is then tested on thousands of inputs against the compiled Fortran original and against a 50-digit referee (mpmath). Where the original itself is wrong, an automated loop sends Kiro the evidence and asks it to do better.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<section>
+  <h2>Flaw ledger</h2>
+  <p class="lead">Each row is an original that fails one range of inputs, and a Kiro port that passes the same range on 10,000 held-out inputs it never saw.</p>
+  <div class="ledger" id="ledger"><noscript><p class="small">This page needs JavaScript to draw the ledger. The raw data is in <code>data/ledger.json</code>.</p></noscript></div>
+</section>
+
+<section id="cases"></section>
+
+<section>
+  <h2>How a port earns its verdict</h2>
+  <div class="steps">
+    <div class="step"><b>1. Port</b>Kiro translates the Fortran literally. It can read the source and write only <code>routines/</code>. It has no shell and cannot see the tests.</div>
+    <div class="step"><b>2. Trial</b>The port, the compiled original and the 50-digit referee run on the same seeded inputs, split into ranges. Errors are measured in ULPs (units in the last place).</div>
+    <div class="step"><b>3. Evidence</b>For failures, the loop sends a report, a precision autopsy (the same code run in double and in 60 digits) and a check of every copied constant. Each change is also split into separate edits and each one is tried on its own.</div>
+    <div class="step"><b>4. Verdict</b>Any round that makes things worse, or doesn't help, is undone with a new commit. HEALED means the port beats the original on its failing range, keeps the rest, and the held-out run agrees.</div>
+  </div>
+  <p class="small" style="margin-top:12px">Verdicts: RESURRECTED (passes everywhere), UNDEAD (close), STILL DEAD (fails), HEALED (fixes a flaw of the original). Every Kiro edit is committed exactly as written, failed attempts included.</p>
+</section>
+
+<section>
+  <h2>Re-run it yourself</h2>
+  <p class="lead">Pick a routine and an input. Your browser loads Python (Pyodide, about 10 MB, once) and runs three things on that input: Kiro's faithful port (which matched the compiled original in its trial), Kiro's healed port, and the 50-digit referee. Nothing is sent anywhere.</p>
+  <div class="lab">
+    <div class="row">
+      <select id="lab-fn" aria-label="routine"></select>
+      <input id="lab-x" aria-label="input x" value="3.141592653706479" inputmode="decimal">
+      <button id="lab-run">Run in my browser</button>
+    </div>
+    <div id="lab-status" role="status"></div>
+    <div class="scroll"><table class="t" id="lab-out" hidden></table></div>
+    <p class="small" style="margin-top:10px">If Python can't load (offline, or a blocked CDN), the precomputed tables above show the same three columns for fixed inputs, computed when this page was built.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Census of the originals</h2>
+  <p class="lead" id="census"></p>
+  <div class="scroll"><table class="t" id="census-t"></table></div>
+</section>
+
+<footer>
+  <p>Built from commit <a id="built" href="#"></a> of <a id="repo" href="#">the public repository</a>. Every trial number comes from a committed run file, linked next to it; spot checks are computed from committed code when the page is built.</p>
+  <p>GALVANI checks numbers against a referee. It doesn't claim any other library is built on SLATEC, and a HEALED port is only as good as the inputs it was tested on.</p>
+  <p>Kiroween 2026 · MIT licence</p>
+</footer>
+</main>
+
+<script id="ledger-data" type="application/json">__LEDGER_JSON__</script>
+<script>
+"use strict";
+const L = JSON.parse(document.getElementById("ledger-data").textContent);
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct = v => (typeof v === "number" ? (v >= 99.995 ? "100" : v.toFixed(v < 10 ? 1 : 2).replace(/\.?0+$/, "")) + "%" : String(v));
+const ulp = v => {
+  if (typeof v !== "number") return String(v);
+  if (v === 0) return "0";
+  if (v < 10) return v.toFixed(v < 1 ? 2 : 1).replace(/\.?0+$/, "");
+  if (v < 1e5) return Math.round(v).toLocaleString("en-US");
+  return v.toExponential(1).replace("e+", "e");
+};
+const badge = v => `<span class="badge ${v === "HEALED" ? "b-healed" : v === "RESURRECTED" ? "b-res" : "b-dead"}">${esc(v)}</span>`;
+
+function worstDomain(run) {
+  const o = run.original_on_same_inputs || {};
+  let best = null;
+  for (const [d, s] of Object.entries(o)) if (best === null || s.pass_rate < o[best].pass_rate) best = d;
+  return best;
+}
+
+// stats
+const healed = L.routines.filter(r => r.runs.port_heldout.verdict === "HEALED").length;
+const byLoop = L.routines.filter(r => r.how === "loop").length;
+$("#stats").innerHTML = [
+  [L.census ? L.census.routines : "-", "FNLIB originals on trial"],
+  [L.census ? L.census.failing.length : "-", "originals that fail a range"],
+  [healed, "HEALED by Kiro ports"],
+  [byLoop, "of them by the one-command loop"],
+].map(([v, k]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+
+// ledger + cases
+$("#ledger").innerHTML = L.routines.map(r => {
+  const h = r.runs.port_heldout, d = worstDomain(h), o = h.original_on_same_inputs[d];
+  return `<a class="lrow" href="#case-${r.name}">
+    <div><div class="lname">${r.name.toUpperCase()}</div>${badge(h.verdict)}</div>
+    <div>${esc(r.flaw)}</div>
+    <div class="delta">range <b>${esc(d)}</b><br><span class="from">${pct(o.pass_rate)}</span> &rarr; <span class="to">${pct(h.domains[d].pass_rate)}</span> pass</div>
+  </a>`;
+}).join("");
+
+$("#cases").innerHTML = L.routines.map(r => {
+  const h = r.runs.port_heldout, dev = r.runs.port_dev, d = worstDomain(h);
+  const bars = Object.entries(h.domains).map(([dom, s]) => {
+    const o = (h.original_on_same_inputs[dom] || {}).pass_rate;
+    return `<div class="bar"><div>${esc(dom)}</div>
+      <div class="track" role="img" aria-label="${esc(dom)}: original ${pct(o)}, port ${pct(s.pass_rate)}">
+        <div class="fill o" style="width:${typeof o === "number" ? o : 0}%"></div>
+        <div class="fill p" style="width:${s.pass_rate}%"></div></div>
+      <div class="n"><span class="bad">${pct(o)}</span><br><span class="good">${pct(s.pass_rate)}</span></div></div>`;
+  }).join("");
+  const fl = r.fortran_excerpt.map(([n, t]) =>
+    `<span class="cl${r.bug_lines.includes(n) ? " bug" : ""}"><span class="ln">${n}</span>${esc(t)}</span>`).join("");
+  const pl = r.port_excerpt.map(([n, t]) =>
+    `<span class="cl${n === r.port_line ? " fix" : ""}"><span class="ln">${n}</span>${esc(t)}</span>`).join("");
+  const samples = r.samples.map(s => {
+    const okF = typeof s.faithful_ulp === "number" && s.faithful_ulp <= s.allowed;
+    const okH = typeof s.healed_ulp === "number" && s.healed_ulp <= s.allowed;
+    const val = v => typeof v === "number" ? v.toPrecision(10) : esc(v);
+    return `<tr><td>${s.x}</td><td>${val(s.referee)}</td>
+      <td class="${okF ? "good" : "bad"}">${val(s.faithful)}</td><td class="${okF ? "good" : "bad"}">${ulp(s.faithful_ulp)}</td>
+      <td class="${okH ? "good" : "bad"}">${val(s.healed)}</td><td class="${okH ? "good" : "bad"}">${ulp(s.healed_ulp)}</td>
+      <td>${ulp(s.allowed)}</td></tr>`;
+  }).join("");
+  const story = r.story.map(c =>
+    `<li><a href="${c.url}"><code>${c.commit.slice(0, 7)}</code></a> ${esc(c.subject.length > 150 ? c.subject.slice(0, 150) + "…" : c.subject)}</li>`).join("");
+  return `<article class="case" id="case-${r.name}">
+    <div class="case-h"><h3>${esc(r.title)}</h3>${badge(h.verdict)}
+      <span class="small">${r.how === "loop" ? "healed by the one-command loop" : "healed by a hand-run loop"}</span></div>
+    <div class="case-b">
+      <p>${esc(r.flaw)}</p>
+      <p class="small" style="margin-top:10px">Held-out trial: ${h.n.toLocaleString("en-US")} inputs (seed ${h.seed}), pass rate per range, compiled original vs Kiro's port.
+        Source: <a href="${h.url}">${esc(h.file)}</a>. The dev trial (${dev.n.toLocaleString("en-US")} inputs, seed ${dev.seed}) agrees: <a href="${dev.url}">${esc(dev.file)}</a>.</p>
+      <div class="legend"><span><i style="background:var(--dead)"></i>compiled original</span><span><i style="background:var(--ok)"></i>Kiro's port</span></div>
+      <div class="bars">${bars}</div>
+      <div class="code2">
+        <div class="codebox"><div class="cap">Fortran original, fortran/slatec/${r.name}.f</div><pre>${fl}</pre></div>
+        <div class="codebox"><div class="cap">Kiro's port, routines/${r.name}.py (comment and fix written by Kiro)</div><pre>${pl}</pre></div>
+      </div>
+      <details open><summary>Spot checks, computed when this page was built</summary>
+        <div class="scroll"><table class="t"><thead><tr><th>x</th><th>referee (50 digits)</th><th>faithful port</th><th>ULP</th><th>healed port</th><th>ULP</th><th>allowed ULP</th></tr></thead><tbody>${samples}</tbody></table></div>
+        <p class="small">The faithful port is Kiro's translation before healing (<code>${r.faithful_commit.slice(0, 7)}</code>). Its trial matched the compiled original on every range. The allowance grows where the function is very sensitive to its input, such as next to a pole, because x itself is only exact to half an ULP.</p>
+      </details>
+      <details><summary>How it got here: ${r.story.length} commits, failed attempts included</summary><ol class="story">${story}</ol></details>
+      <p class="note">${esc(r.disclosure)}</p>
+    </div></article>`;
+}).join("");
+
+// census
+if (L.census) {
+  $("#census").textContent = `${L.census.routines} double-precision, one-argument FNLIB originals were compiled with gfortran and run on ${L.census.n.toLocaleString("en-US")} seeded inputs each (seed ${L.census.seed}) against the 50-digit referee. These ${L.census.failing.length} fail at least one range (pass rate under 95%):`;
+  $("#census-t").innerHTML = `<thead><tr><th>routine</th><th>worst range</th><th>pass</th><th>max ULP</th><th></th></tr></thead><tbody>` +
+    L.census.failing.map(c => `<tr><td>${c.name.toUpperCase()}</td><td>${esc(c.domain)}</td><td class="bad">${pct(c.pass_rate)}</td><td>${ulp(c.max_ulp)}</td><td style="text-align:left">${esc(c.note || "")}${L.routines.some(r => r.name === c.name) ? " healed, see above" : ""}</td></tr>`).join("") + `</tbody>`;
+}
+$("#built").textContent = L.built_from.slice(0, 7);
+$("#built").href = L.built_from_url;
+$("#repo").href = L.repo;
+
+// re-run in the browser (Pyodide, loaded on first click)
+const PYODIDE = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/";
+$("#lab-fn").innerHTML = L.routines.map(r => `<option value="${r.name}">${r.name.toUpperCase()}</option>`).join("");
+$("#lab-fn").addEventListener("change", e => {
+  const r = L.routines.find(q => q.name === e.target.value);
+  $("#lab-x").value = r.samples[0].x;
+});
+let py = null;
+function loadScript(src, ms) {
+  return new Promise((ok, fail) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = ok; s.onerror = () => fail(new Error("could not load " + src));
+    document.head.appendChild(s);
+    setTimeout(() => fail(new Error("timed out loading Python")), ms);
+  });
+}
+async function getPy(status) {
+  if (py) return py;
+  status("Loading Python in your browser (first time only)…");
+  if (typeof loadPyodide === "undefined") await loadScript(PYODIDE + "pyodide.js", 60000);
+  const p = await loadPyodide({indexURL: PYODIDE});
+  status("Loading mpmath…");
+  await p.loadPackage("mpmath");
+  for (const r of L.routines) {
+    p.globals.set("SRC_F", r.faithful_source); p.globals.set("SRC_H", r.port_source);
+    p.runPython(`
+import types
+for tag, src in (("faithful", SRC_F), ("healed", SRC_H)):
+    m = types.ModuleType("${r.name}_" + tag)
+    exec(compile(src, "${r.name}_" + tag, "exec"), m.__dict__)
+    globals()["${r.name}_" + tag] = getattr(m, "${r.name}")
+`);
+  }
+  p.runPython(`
+import math, mpmath
+mpmath.mp.dps = 50
+def ulp_error(got, ref):
+    if got == ref: return 0.0
+    if not math.isfinite(got) or not math.isfinite(ref): return math.inf
+    return abs(got - ref) / (math.ulp(abs(ref)) or 5e-324)
+def allowed(mpfn, x):   # same rule as harness/ulp.py: max(4, ceil(2 * condition number))
+    with mpmath.workdps(50):
+        mx = mpmath.mpf(x); fx = mpfn(mx)
+        if not mpmath.isfinite(fx): return 4.0
+        if abs(fx) < mpmath.mpf("1e-290"): return 2e15
+        k = abs(mx * mpmath.diff(mpfn, mx) / fx)
+    return max(4.0, math.ceil(float(2 * k)))
+def trial(name, mpname, x):
+    mpfn = getattr(mpmath, mpname)
+    with mpmath.workdps(50):
+        ref = float(mpfn(mpmath.mpf(x)))
+    out = {"x": x, "ref": ref, "allowed": allowed(mpfn, x)}
+    for tag in ("faithful", "healed"):
+        try:
+            v = float(globals()[name + "_" + tag](x)); out[tag] = v; out[tag + "_ulp"] = ulp_error(v, ref)
+        except Exception as e:
+            out[tag] = type(e).__name__; out[tag + "_ulp"] = math.inf
+    return out
+`);
+  py = p;
+  return py;
+}
+$("#lab-run").addEventListener("click", async () => {
+  const btn = $("#lab-run"), out = $("#lab-out"), st = $("#lab-status");
+  const status = t => { st.textContent = t; };
+  const name = $("#lab-fn").value, x = Number($("#lab-x").value);
+  const r = L.routines.find(q => q.name === name);
+  if (!Number.isFinite(x)) { status("Please enter a number."); return; }
+  btn.disabled = true;
+  try {
+    const p = await getPy(status);
+    status("Running…");
+    const res = p.globals.get("trial")(name, r.mp_fn, x).toJs({dict_converter: Object.fromEntries});
+    const cell = (v, u) => `<td class="${u <= res.allowed ? "good" : "bad"}">${typeof v === "number" ? v.toPrecision(17) : esc(v)}</td><td class="${u <= res.allowed ? "good" : "bad"}">${ulp(u)}</td>`;
+    out.innerHTML = `<thead><tr><th>x</th><th>referee</th><th>faithful</th><th>ULP</th><th>healed</th><th>ULP</th><th>allowed</th></tr></thead>
+      <tbody><tr><td>${res.x}</td><td>${res.ref.toPrecision(17)}</td>${cell(res.faithful, res.faithful_ulp)}${cell(res.healed, res.healed_ulp)}<td>${ulp(res.allowed)}</td></tr></tbody>`;
+    out.hidden = false;
+    status("Done. Green means within the allowed error.");
+  } catch (e) {
+    status("Python could not run here (" + e.message + "). The precomputed tables above show the same comparison.");
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

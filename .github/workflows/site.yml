@@ -1,0 +1,64 @@
+name: site
+
+# Build the static site from committed run files, test it in a real browser, publish it to
+# GitHub Pages, and check once a day (through the judging period) that it is still up.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # the build reads old commits (faithful ports, story)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mpmath playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: python site/tools/build.py
+      - run: python site/tools/test_site.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: site/test-artifacts/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  uptime:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: The live site answers and shows the ledger
+        run: |
+          [ "$(date -u +%Y%m%d)" -gt 20270131 ] && { echo "judging is over"; exit 0; }
+          body=$(curl -fsS --retry 3 --retry-delay 20 https://mathuryashash.github.io/kiroween-2026/)
+          echo "$body" | grep -q 'id="ledger-data"'
+          echo "$body" | grep -q '"name":"dgamma"'
