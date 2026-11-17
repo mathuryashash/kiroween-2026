@@ -89,6 +89,11 @@ def main(argv=None) -> int:
     ap.add_argument("--no-scipy", action="store_true")
     a = ap.parse_args(argv)
     names = a.only.split(",") if a.only else list(REFEREES)
+    import subprocess
+    from harness.trial import _exam_dirty
+    head = subprocess.run(["git", "-C", str(REPO_ROOT), "rev-parse", "--short", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    dirty_before = _exam_dirty()
     rows = census(names, a.n, a.seed, with_scipy=not a.no_scipy)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out = REPO_ROOT / "runs" / "census" / f"census_{stamp}.json"
@@ -103,7 +108,8 @@ def main(argv=None) -> int:
             return [_j(v) for v in o]
         return o
 
-    out.write_text(json.dumps(_j({"n": a.n, "seed": a.seed, "rows": rows}), indent=2),
+    out.write_text(json.dumps(_j({"n": a.n, "seed": a.seed, "exam_commit": head,
+                                  "exam_dirty_files_at_start": dirty_before, "rows": rows}), indent=2),
                    encoding="utf-8", newline="\n")
     print(f"\nwritten {out.relative_to(REPO_ROOT)}")
     return 0

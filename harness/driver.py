@@ -154,6 +154,7 @@ def build_driver(
         str(SUPPORT_DIR / "i1mach_modern.f"),
         str(SUPPORT_DIR / "r1mach_modern.f"),
         str(SUPPORT_DIR / "xermsg_stub.f"),
+        str(SUPPORT_DIR / "j4save_stub.f"),
     ]
 
     # Generate driver source
