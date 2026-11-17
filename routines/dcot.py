@@ -126,9 +126,9 @@ def dcot(x):
     y = y - ainty2
     
     # MOD(AINTY, 2.0D0)
+    # Failing inputs: 0.8788891212146676, 102.10073472054727, 3.141592653706479
+    # Do not modify y before branching; the ifn flag controls the final sign only.
     ifn = int(ainty) % 2
-    if ifn == 1:
-        y = 1.0 - y
     
     # Precision warning
     if abs(x) > 0.5 and y < abs(x) * _SQEPS:
