@@ -477,16 +477,18 @@ def loop(name: str, model: str = "claude-haiku-4.5", max_rounds: int = 4, credit
 
         print(f"[loop] round {k}: calling the agent ({model})", flush=True)
         before_rev = _git("rev-parse", "HEAD").strip()
-        status_before = set(_status())
+        status_before = set(_status(EXAM_PATHS))
         port_changed = lambda: bool(_git("diff", "--", f"routines/{name}.py").strip())
         res = call_agent(prompt, model, f"{name}_{run_id}_r{k}", agent_cmd, changed=port_changed)
         ledger["total_credits"] += res["credits"]
         evidence = [pfile, *res["logs"]]
 
-        touched = [f for f in set(_status()) - status_before
-                   if not f.startswith(AGENT_WRITABLE) and not f.startswith("runs/")]
+        # Exam files are what a verdict depends on. Writes elsewhere are already denied by the
+        # agent's permission rules; watching only the exam keeps human edits to the site or docs
+        # during a long run from stopping it (loop run 20261117T193234Z stopped on such an edit).
+        touched = sorted(set(_status(EXAM_PATHS)) - status_before)
         if touched:                                      # the guard should make this impossible
-            stop("files outside routines/ changed: " + ", ".join(touched[:5]))
+            stop("exam files changed during the round: " + ", ".join(touched[:5]))
             ledger["rounds"].append({"round": k, "type": "guard_breach", "files": touched})
             break
         diff = _git("diff", "--", f"routines/{name}.py")

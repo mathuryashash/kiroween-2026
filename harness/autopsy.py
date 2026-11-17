@@ -388,11 +388,17 @@ def format_report(a: dict) -> str:
             rep = (f"   (assigned {t['repeats'] + 1} times; last value {_fmt(t['last'])})"
                    if t["repeats"] else "")
             lines.append(f"    line {t['line']:>4}  {t['source'][:60]:<60}  {t['var']} = {_fmt(t['shadow'])}{rep}")
+    logic = a.get("logic_trace") is not None
+    if logic and a["chain"]:
+        lines.append("  Rounding drift was also found (below), but it cannot be the main cause: the "
+                     "60-digit run has no such drift and is still wrong. Compare the values above with "
+                     "the reference answer and look for the first one that cannot lead to it.")
     for depth, c in enumerate(a["chain"]):
         ind = "  " * (depth + 1)
         state = (" with " + ", ".join(f"{n}={v}" for n, v in c["int_state"].items())) if c["int_state"] else ""
         before = "new" if c["before_ulp"] is None else f"{c['before_ulp']:.3g} ULP"
-        lines.append(f"{ind}First line where a value goes bad: {c['func']}() line {c['line']}{state}")
+        head = "Secondary: first line where rounding drifts" if logic else "First line where a value goes bad"
+        lines.append(f"{ind}{head}: {c['func']}() line {c['line']}{state}")
         lines.append(f"{ind}  `{c['source']}`")
         lines.append(f"{ind}  {c['var']}: {before} before this line -> {c['after_ulp']:.3g} ULP after")
         if c["subexpressions"]:

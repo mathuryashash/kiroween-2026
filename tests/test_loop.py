@@ -167,7 +167,14 @@ def test_throttle_is_retried_then_succeeds(repo, tmp_path, monkeypatch):
 
 def test_agent_writing_outside_routines_stops_the_loop(repo, tmp_path, monkeypatch):
     led, _, _ = run(repo, tmp_path, monkeypatch, [{"touch": "harness/evil.py"}])
-    assert led["stop_reason"].startswith("files outside routines/ changed")
+    assert led["stop_reason"].startswith("exam files changed during the round")
+
+
+def test_edits_outside_the_exam_do_not_stop_the_loop(repo, tmp_path, monkeypatch):
+    (repo / "site").mkdir()
+    led, _, _ = run(repo, tmp_path, monkeypatch,
+                    [{"touch": "site/page.html", "edit": ["x + 1 - 1", "x + (1 - 1)"]}])
+    assert led["stop_reason"] == "healed_confirmed"
 
 
 def test_preflight_refuses_a_dirty_exam(repo, tmp_path, monkeypatch):
