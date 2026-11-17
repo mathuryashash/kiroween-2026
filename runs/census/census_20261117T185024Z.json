@@ -1,0 +1,1327 @@
+{
+  "n": 1000,
+  "seed": 11,
+  "rows": [
+    {
+      "name": "dgamma",
+      "hand_touched": true,
+      "original": {
+        "tiny": {
+          "pass_rate": 0.0,
+          "max_ulp": 481200234431.0,
+          "worst_x": 1.8652768620307294e-12
+        },
+        "small": {
+          "pass_rate": 44.5,
+          "max_ulp": 596.0,
+          "worst_x": 0.0012168332982355307
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 138.0,
+          "worst_x": 29.988473752812478
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 781.0,
+          "worst_x": 156.07305258073862
+        },
+        "negative": {
+          "pass_rate": 38.67,
+          "max_ulp": 268271.0,
+          "worst_x": -1.3250154646253646e-06
+        }
+      },
+      "original_overall": 64.7,
+      "min_domain_pass": 0.0,
+      "scipy": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        }
+      },
+      "seconds": 3.7
+    },
+    {
+      "name": "derf",
+      "hand_touched": true,
+      "original": {
+        "tiny": {
+          "pass_rate": 58.5,
+          "max_ulp": 8999651103642336.0,
+          "worst_x": 3.2986859179582833e-09
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 0.05137301397730027
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": -1.1644962267574397e-05
+        }
+      },
+      "original_overall": 91.7,
+      "min_domain_pass": 58.5,
+      "scipy": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        }
+      },
+      "seconds": 7.9
+    },
+    {
+      "name": "derfc",
+      "hand_touched": true,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": 0.9118704212456579
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 120.0,
+          "worst_x": 11.61767243521294
+        },
+        "far_tail": {
+          "pass_rate": 100.0,
+          "max_ulp": 476.0,
+          "worst_x": 24.267933486750202
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": -0.07036649577784196
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 118.0
+        },
+        "far_tail": {
+          "pass_rate": 100.0,
+          "max_ulp": 479.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        }
+      },
+      "seconds": 5.1
+    },
+    {
+      "name": "dasinh",
+      "hand_touched": false,
+      "original": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 0.0072035631271911305
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 1.1310407126081323
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 66578305.36632414
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": -5.107116309465397e-06
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "seconds": 2.4
+    },
+    {
+      "name": "dacosh",
+      "hand_touched": false,
+      "original": {
+        "near_1": {
+          "pass_rate": 100.0,
+          "max_ulp": 16375925.0,
+          "worst_x": 1.000000007330529
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 1.0519698854884156
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 25.599460013844844
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "seconds": 4.5
+    },
+    {
+      "name": "datanh",
+      "hand_touched": false,
+      "original": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 3.9602614729778024e-07
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 0.010898166037980219
+        },
+        "near_1": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 0.9999999999964105
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": -0.4332134523527796
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "seconds": 4.7
+    },
+    {
+      "name": "ddaws",
+      "hand_touched": false,
+      "original": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 1.1553942037669877e-06
+        },
+        "mid": {
+          "pass_rate": 99.71,
+          "max_ulp": 6.0,
+          "worst_x": 3.579105585860928
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 2777.1963221772
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0,
+          "worst_x": -3.6906759228731407
+        }
+      },
+      "original_overall": 99.9,
+      "min_domain_pass": 99.71428571428571,
+      "scipy": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "mid": {
+          "pass_rate": 74.0,
+          "max_ulp": 90.0
+        },
+        "large": {
+          "pass_rate": 96.5,
+          "max_ulp": 12.0
+        },
+        "negative": {
+          "pass_rate": 80.5,
+          "max_ulp": 63.0
+        }
+      },
+      "seconds": 9.3
+    },
+    {
+      "name": "dbesi0",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 0.344373215321041
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 27.344324499748595
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": -4.168519426073363
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.5
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        }
+      },
+      "seconds": 10.6
+    },
+    {
+      "name": "dbesi1",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": 0.0015078469130204277
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 3.3975017928671853
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": -0.32505634725544147
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 99.25,
+          "max_ulp": 5.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 6.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 10.0
+        }
+      },
+      "seconds": 13.1
+    },
+    {
+      "name": "dbsi0e",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 99.75,
+          "max_ulp": 5.0,
+          "worst_x": 4.872195361275619e-06
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 8364780.409266487
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0,
+          "worst_x": -0.07752559063299667
+        }
+      },
+      "original_overall": 99.9,
+      "min_domain_pass": 99.75,
+      "scipy": {
+        "small": {
+          "pass_rate": 97.0,
+          "max_ulp": 7.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "negative": {
+          "pass_rate": 99.5,
+          "max_ulp": 5.0
+        }
+      },
+      "seconds": 8.6
+    },
+    {
+      "name": "dbsi1e",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": 7.5626194395239425e-06
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 18529122.746631812
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": -0.004425027666991282
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 99.75,
+          "max_ulp": 5.0
+        },
+        "mid": {
+          "pass_rate": 99.75,
+          "max_ulp": 6.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0
+        }
+      },
+      "seconds": 8.3
+    },
+    {
+      "name": "dbesj0",
+      "hand_touched": true,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 9.0,
+          "worst_x": 2.4764200260678275
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 102959.0,
+          "worst_x": 90.32224201780203
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 23938881.0,
+          "worst_x": 616709.545509804
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 4636.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 334.0
+        }
+      },
+      "seconds": 10.8
+    },
+    {
+      "name": "dbesj1",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 7.0,
+          "worst_x": 3.7775557983436907
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1332.0,
+          "worst_x": 76.24027102405545
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 36539022.0,
+          "worst_x": 601951.9399789781
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 14.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 24.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 27.0
+        }
+      },
+      "seconds": 10.7
+    },
+    {
+      "name": "dbesy0",
+      "hand_touched": true,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 42.0,
+          "worst_x": 3.9377623992872404
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1470.0,
+          "worst_x": 54.16663794892194
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 4892046.0,
+          "worst_x": 920537.5744595188
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 150.0
+        },
+        "mid": {
+          "pass_rate": 96.25,
+          "max_ulp": 51.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 45.0
+        }
+      },
+      "seconds": 53.8
+    },
+    {
+      "name": "dbesy1",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 4.0,
+          "worst_x": 1.646942314017401e-07
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 9793.0,
+          "worst_x": 90.32224201780203
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 70467766.0,
+          "worst_x": 160572.29660254339
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 99.67,
+          "max_ulp": 6.0
+        },
+        "mid": {
+          "pass_rate": 98.75,
+          "max_ulp": 9485.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 18077235.0
+        }
+      },
+      "seconds": 210.6
+    },
+    {
+      "name": "dbesk0",
+      "hand_touched": true,
+      "original": {
+        "small": {
+          "pass_rate": 99.8,
+          "max_ulp": 5.0,
+          "worst_x": 0.020744175868068097
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 622.927175307894
+        }
+      },
+      "original_overall": 99.9,
+      "min_domain_pass": 99.8,
+      "scipy": {
+        "small": {
+          "pass_rate": 96.6,
+          "max_ulp": 5.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        }
+      },
+      "seconds": 414.6
+    },
+    {
+      "name": "dbesk1",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 0.8530569493034171
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 622.927175307894
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        }
+      },
+      "seconds": 923.2
+    },
+    {
+      "name": "dbsk0e",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 99.6,
+          "max_ulp": 5.0,
+          "worst_x": 1.8918488979402128
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 1658139.2851566356
+        }
+      },
+      "original_overall": 99.8,
+      "min_domain_pass": 99.6,
+      "scipy": {
+        "small": {
+          "pass_rate": 96.0,
+          "max_ulp": 6.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        }
+      },
+      "seconds": 128.7
+    },
+    {
+      "name": "dbsk1e",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": 0.8530569493034171
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 467.3209938965624
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        }
+      },
+      "seconds": 308.5
+    },
+    {
+      "name": "dai",
+      "hand_touched": true,
+      "original": {
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 387790.0,
+          "worst_x": -60.85908114612824
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 1.5555992449303795
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 392.0,
+          "worst_x": 76.1917569335147
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "negative": {
+          "pass_rate": 99.75,
+          "max_ulp": 34655.0
+        },
+        "small": {
+          "pass_rate": 96.33,
+          "max_ulp": 44.0
+        },
+        "mid": {
+          "pass_rate": 99.33,
+          "max_ulp": 618.0
+        }
+      },
+      "seconds": 31.2
+    },
+    {
+      "name": "dbi",
+      "hand_touched": false,
+      "original": {
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 4139.0,
+          "worst_x": -37.24826035952598
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 0.010543887284203628
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 604.0,
+          "worst_x": 65.28316317367357
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "negative": {
+          "pass_rate": 99.0,
+          "max_ulp": 3147.0
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 780.0
+        }
+      },
+      "seconds": 18.4
+    },
+    {
+      "name": "daie",
+      "hand_touched": false,
+      "original": {
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 5293.0,
+          "worst_x": -97.33768257725352
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 0.9564233828311602
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 9992.653905913117
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "seconds": 9.1
+    },
+    {
+      "name": "dbie",
+      "hand_touched": false,
+      "original": {
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 4139.0,
+          "worst_x": -37.24826035952598
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 2.207944452112691e-05
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 26.60019266093721
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "seconds": 8.2
+    },
+    {
+      "name": "dcbrt",
+      "hand_touched": false,
+      "original": {
+        "positive": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 2.6775161921773473e-29
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": -0.0020537177113999993
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "positive": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        }
+      },
+      "seconds": 16.6
+    },
+    {
+      "name": "dcosdg",
+      "hand_touched": false,
+      "original": {
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 319.0,
+          "worst_x": 90.09579407463706
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 401966.0,
+          "worst_x": 987031.6363026275
+        },
+        "near_90": {
+          "pass_rate": 100.0,
+          "max_ulp": 243553149841.0,
+          "worst_x": 90.00000000013289
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "near_90": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        }
+      },
+      "seconds": 5.4
+    },
+    {
+      "name": "dsindg",
+      "hand_touched": false,
+      "original": {
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 587.0,
+          "worst_x": 179.8285434852233
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 140420.0,
+          "worst_x": 574739.3385141011
+        },
+        "near_180": {
+          "pass_rate": 100.0,
+          "max_ulp": 607563769688.0,
+          "worst_x": 180.00000000014265
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "near_180": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        }
+      },
+      "seconds": 5.2
+    },
+    {
+      "name": "dcot",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": 0.8574758174051706
+        },
+        "mid": {
+          "pass_rate": 99.75,
+          "max_ulp": 308.0,
+          "worst_x": 463.38375205638135
+        },
+        "near_pi": {
+          "pass_rate": 70.5,
+          "max_ulp": 8874109182361097.0,
+          "worst_x": 3.141592657370954
+        }
+      },
+      "original_overall": 94.0,
+      "min_domain_pass": 70.5,
+      "seconds": 5.8
+    },
+    {
+      "name": "de1",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 3.0,
+          "worst_x": 0.9853176532645842
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 4.0443588156739105
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 5.0,
+          "worst_x": -0.35228701339263424
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "small": {
+          "pass_rate": 99.67,
+          "max_ulp": 6.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 12.0
+        }
+      },
+      "seconds": 8.0
+    },
+    {
+      "name": "dei",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 14.0,
+          "worst_x": 0.38056060882210785
+        },
+        "mid": {
+          "pass_rate": 99.67,
+          "max_ulp": 5.0,
+          "worst_x": 1.1994086298143771
+        },
+        "near_root": {
+          "pass_rate": 100.0,
+          "max_ulp": 35859252995.0,
+          "worst_x": 0.3725074107840442
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": -0.9267477584826469
+        }
+      },
+      "original_overall": 99.9,
+      "min_domain_pass": 99.66666666666667,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 26.0
+        },
+        "mid": {
+          "pass_rate": 99.33,
+          "max_ulp": 90.0
+        },
+        "near_root": {
+          "pass_rate": 100.0,
+          "max_ulp": 195273227053.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        }
+      },
+      "seconds": 5.6
+    },
+    {
+      "name": "dli",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 0.573760500529247
+        },
+        "near_root": {
+          "pass_rate": 100.0,
+          "max_ulp": 150685514134.0,
+          "worst_x": 1.4513692348846574
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 2.802649791370627e+222
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "seconds": 4.2
+    },
+    {
+      "name": "dexprl",
+      "hand_touched": false,
+      "original": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 0.0,
+          "worst_x": 3.3403773875627174e-08
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 2.7411188379474285
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": -0.9199670689554967
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        }
+      },
+      "seconds": 1.9
+    },
+    {
+      "name": "dgamr",
+      "hand_touched": false,
+      "error": "RuntimeError: Compilation failed in 2.0s:\nD:/tools/winlibs/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/16.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\\Users\\YASHAS~1\\AppData\\Local\\Temp\\ccPaIZs4.o:xerclr.f:(.text+0x24): undefined reference to `j4save_'\nD:/tools/winlibs/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/16.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\\Users\\YASHAS~1\\AppData\\Local\\Temp\\ccqi6EFx.o:xgetf.f:(.text+0x28): undefined reference to `j4save_'\nD:/tools/winlibs/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/16.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\\Users\\YASHAS~1\\AppDat",
+      "trace": "Traceback (most recent call last):\n  File \"D:\\hackathons\\kiroween\\repo\\harness\\census.py\", line 37, in census\n    r = run_trial(name, \"original\", n, seed)\n  File \"D:\\hackathons\\kiroween\\repo\\harness\\trial.py\", line 228, in run_trial\n    exe, fc_ver = build_driver(name, variant_f=variant_f)\n                  ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\hackathons\\kiroween\\repo\\harness\\driver.py\", line 179, in build_driver\n    raise RuntimeError(\n        f\"Compilation failed in {elapsed:.1f}s:\\n{r.stderr}\"\n    )\nRuntimeError: Compilation failed in 2.0s:\nD:/tools/winlibs/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/16.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\\Users\\YASHAS~1\\AppData\\Local\\Temp\\ccPaIZs4.o:xerclr.f:(.text+0x24): undefined reference to `j4save_'\nD:/tools/winlibs/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/16.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\\Users\\YASHAS~1\\AppData\\Local\\Temp\\ccqi6EFx.o:xgetf.f:(.text+0x28): undefined reference to `j4save_'\nD:/tools/winlibs/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/16.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:\\Users\\YASHAS~1\\AppData\\Local\\Temp\\cc5Hmqz7.o:xsetf.f:(.text+0x151): undefined reference to `j4save_'\ncollect2.exe: error: ld returned 1 exit status\n\n",
+      "seconds": 18.5
+    },
+    {
+      "name": "dlngam",
+      "hand_touched": false,
+      "original": {
+        "tiny": {
+          "pass_rate": 0.0,
+          "max_ulp": 17878499539.0,
+          "worst_x": 1.409850743582478e-12
+        },
+        "small": {
+          "pass_rate": 71.33,
+          "max_ulp": 93.0,
+          "worst_x": 0.0010811159167739349
+        },
+        "near_1": {
+          "pass_rate": 100.0,
+          "max_ulp": 3390899741.0,
+          "worst_x": 1.0000000001521554
+        },
+        "near_2": {
+          "pass_rate": 100.0,
+          "max_ulp": 24769870191.0,
+          "worst_x": 2.000000000132844
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 2.3159997116582836
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 1.0057421918999181e+147
+        },
+        "negative": {
+          "pass_rate": 56.0,
+          "max_ulp": 22566.0,
+          "worst_x": -1.3766682924191067e-06
+        }
+      },
+      "original_overall": 71.9,
+      "min_domain_pass": 0.0,
+      "scipy": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 28.0
+        },
+        "near_1": {
+          "pass_rate": 100.0,
+          "max_ulp": 84344415.0
+        },
+        "near_2": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 215.0
+        }
+      },
+      "seconds": 2.8
+    },
+    {
+      "name": "dlnrel",
+      "hand_touched": false,
+      "original": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 7.479081891209564e-07
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 0.0,
+          "worst_x": 2.603555860880839e+62
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": -0.39246479917651017
+        },
+        "near_m1": {
+          "pass_rate": 100.0,
+          "max_ulp": 0.0,
+          "worst_x": -0.999992182152032
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "tiny": {
+          "pass_rate": 100.0,
+          "max_ulp": 0.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 0.0
+        },
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "near_m1": {
+          "pass_rate": 100.0,
+          "max_ulp": 0.0
+        }
+      },
+      "seconds": 3.8
+    },
+    {
+      "name": "dpsi",
+      "hand_touched": false,
+      "original": {
+        "small": {
+          "pass_rate": 13.5,
+          "max_ulp": 5461106060.0,
+          "worst_x": 1.0126266913274316e-10
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 1.0812387830739374
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 8591388.287989514
+        },
+        "near_root": {
+          "pass_rate": 100.0,
+          "max_ulp": 20759773826.0,
+          "worst_x": 1.4616321449715362
+        },
+        "negative": {
+          "pass_rate": 51.33,
+          "max_ulp": 253335.0,
+          "worst_x": -1.0286979722183723e-06
+        }
+      },
+      "original_overall": 68.1,
+      "min_domain_pass": 13.5,
+      "scipy": {
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0
+        },
+        "near_root": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0
+        },
+        "negative": {
+          "pass_rate": 99.33,
+          "max_ulp": 2566.0
+        }
+      },
+      "seconds": 5.3
+    },
+    {
+      "name": "dspenc",
+      "hand_touched": false,
+      "original": {
+        "negative": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": -0.005197225539334504
+        },
+        "small": {
+          "pass_rate": 100.0,
+          "max_ulp": 1.0,
+          "worst_x": 8.569747212534694e-05
+        },
+        "mid": {
+          "pass_rate": 100.0,
+          "max_ulp": 2.0,
+          "worst_x": 0.7143771896371918
+        },
+        "large": {
+          "pass_rate": 100.0,
+          "max_ulp": 70.0,
+          "worst_x": 12.69325524207063
+        }
+      },
+      "original_overall": 100.0,
+      "min_domain_pass": 100.0,
+      "scipy": {
+        "negative": {
+          "pass_rate": 60.0,
+          "max_ulp": 340539.0
+        },
+        "small": {
+          "pass_rate": 12.8,
+          "max_ulp": 1970025508.0
+        },
+        "mid": {
+          "pass_rate": 29.5,
+          "max_ulp": "inf"
+        },
+        "large": {
+          "pass_rate": 0.0,
+          "max_ulp": "inf"
+        }
+      },
+      "seconds": 16.1
+    }
+  ]
+}
