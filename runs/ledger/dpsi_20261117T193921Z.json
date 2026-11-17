@@ -1,0 +1,55 @@
+{
+  "name": "dpsi",
+  "model": "claude-haiku-4.5",
+  "run_id": "20261117T193921Z",
+  "max_rounds": 4,
+  "credit_cap": 1.5,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000
+  },
+  "start_commit": "98ccc2d414cc177ad5dbe64bd767d69876b998ad",
+  "rounds": [
+    {
+      "round": 0,
+      "type": "port",
+      "commit": "3a2c1bdd53a19f596be94f6beaa77b48df3b6cee",
+      "credits": 0.4523
+    },
+    {
+      "round": 1,
+      "commit": "cfcaa58fcd6a33ffe9ba4506ce7c230262c891ec",
+      "credits": 0.3427,
+      "agent_text": "1`. The series result alone is more accurate than adding near-zero reciprocals that cause digit loss.\n\n2. **Negative domain (x=-679)**: Skip the APSI Chebyshev series evaluation when |x| > 100 to avoid the numerical instability in `_dcsevl` for that argument value. The dominant terms `log(|x|) - 0.5/x` dominate for large |x| anyway; the aux correction is negligible.\n\nBoth changes are minimal, preserve the passing sub-domains (mid, large pass at 100%), and target the two failing sub-domains (small at 13%, negative at 48.5%) by removing code branches that amplify rounding error in extreme cases.",
+      "trial_before": "STILL DEAD, overall 67.15%, small 13.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 48.5%",
+      "trial_after": "STILL DEAD, overall 56.45%, small 13.0%, mid 63.2%, large 99.0%, near_root 100.0%, negative 37.8%",
+      "trial_after_file": "runs/dpsi/port_20261117T194123Z.json",
+      "type": "reverted",
+      "regressions": [
+        "mid 100.00% -> 63.25%",
+        "negative 48.50% -> 37.83%"
+      ],
+      "undo_commit": "7349dcd7ff6300a6e71dd8bb5b66be8c8ec3428a"
+    },
+    {
+      "round": 2,
+      "commit": "d7ec5225bfcd289e18c58b4c72685e4b5d55333e",
+      "credits": 0.1399,
+      "agent_text": "100. The ablation proved that restriction hurt mid-range accuracy by 33% and negative inputs by 17%.\n\n**Explanation**: The port now faithfully matches the compiled original Fortran. The algorithm's failures on very small inputs (13% pass) and very negative inputs (48.5% pass) are inherent to the original implementation, not translation errors\u2014the 60-digit run confirms this by failing identically. A HEALED verdict would require beating the original on those hard cases, which requires algorithmic changes beyond literal translation. This repair restores correctness within the port's proper scope.",
+      "trial_before": "STILL DEAD, overall 67.15%, small 13.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 48.5%",
+      "trial_after": "STILL DEAD, overall 67.15%, small 13.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 48.5%",
+      "trial_after_file": "runs/dpsi/port_20261117T194156Z.json",
+      "type": "no_gain",
+      "undo_commit": "4c0b2e5310f969b6ec298d330369fc26c00527ab"
+    }
+  ],
+  "total_credits": 0.9349,
+  "stop_reason": "two_failed_rounds_in_a_row",
+  "result": null,
+  "final_dev_trial": "STILL DEAD, overall 67.15%, small 13.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 48.5%",
+  "end": "20261117T194156Z"
+}
