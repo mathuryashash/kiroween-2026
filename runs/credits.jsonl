@@ -3,3 +3,4 @@
 {"date":"2026-11-15 18:00","what":"repair_dgamma_1","session":"sess_f6a9cd24-402d-4a75-b2b3-6d53620390c8","credits":9.167}
 {"date":"2026-11-15 18:20","what":"repair_dgamma_2 (claude-haiku-4.5)","session":"sess_592bf105-9147-485c-b962-53ac90890d10","credits":0.498}
 {"date": "2026-11-15 18:40", "what": "repair_dgamma_3 (claude-haiku-4.5)", "session": "sess_d4be0cd7-301d-4e3e-a0e7-6b06df038691", "credits": 0.218}
+{"date": "2026-11-21 23:48", "what": "spec cold-heal-remaining-flaws (claude-haiku-4.5)", "session_log": "runs/kiro_sessions/spec_cold_heal_20261121T181646Z.jsonl.gz", "credits": 0.5077}
