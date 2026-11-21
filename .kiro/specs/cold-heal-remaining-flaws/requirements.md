@@ -1,73 +1,108 @@
-# Cold Test of Remaining Flawed Originals – Requirements
+# Cold-heal the remaining flawed originals: requirements
 
-## Overview
+## Introduction
 
-This feature runs honest cold tests on the remaining SLATEC FNLIB originals that fail at least one input range: DPSI (small 13.5%, negative 51.3%), DLNGAM and DGAMR (which call DGAMMA and inherit its flaws). DERF is out of scope (Maxima bug 2491, known upstream since 2012). Each cold test runs with the exam frozen (harness/, oracle/, tests/, fortran/, tools/, .kiro/steering/, .kiro/agents/, .kiro/hooks/ unchanged from tag loop-frozen-1) with a maximum of 1.5 credits per routine and a stop rule after two failed rounds. All outcomes—HEALED, UNDEAD, and STILL DEAD—are logged and reported on the ledger and site with equal prominence.
+The census (runs/census/census_20261117T185024Z.json and census_20261117T185719Z.json, 36 SLATEC FNLIB originals,
+n = 1000, seed 11) found six originals that fail at least one input range:
 
-## Requirement 1: Inherited Flaws (DLNGAM, DGAMR)
+| Routine | Failing range (census) | Status |
+|---|---|---|
+| DGAMMA | tiny 0.0% | HEALED by Kiro, confirmed on held-out seed 7, n 10000 (f933cca) |
+| DCOT | near_pi 70.5% | HEALED by Kiro (loop run 20261117T193644Z, 0.25 credits, tag loop-frozen-1). Not a cold test: the loop was tuned during DCOT. |
+| DPSI | small 13.5%, negative 51.3% | STILL DEAD after the first cold run (loop run 20261117T193921Z, 0.93 credits, ba04301) |
+| DLNGAM | tiny 0.0% | calls DGAMMA; passes when linked to the fixed Fortran DGAMMA (census 185719Z) |
+| DGAMR | small 11.1% | calls DGAMMA; passes when linked to the fixed Fortran DGAMMA (census 185719Z) |
+| DERF | tiny 58.5% | out of scope: the flaw is already known upstream (Maxima bug 2491, 2012) |
 
-**User Story:** As a verification engineer, I want a Python port of DLNGAM and DGAMR that calls Kiro's healed routines/dgamma.py, so that I can measure whether they pass with the fixed DGAMMA.
+This feature runs the frozen one-command loop (`python -m harness.loop <name> --model claude-haiku-4.5 --credit-cap 1.5`)
+as honest cold tests on DPSI, DLNGAM and DGAMR, and reports every outcome, good or bad.
 
-**Acceptance Criteria:**
-1.1. A port of DLNGAM exists in routines/dlngam.py that calls routines.dgamma() instead of external DGAMMA.
-1.2. A port of DGAMR exists in routines/dgamr.py that calls routines.dgamma() instead of external DGAMMA.
-1.3. When DLNGAM or DGAMR trial completes, the pass_rate for each sub-domain is recorded in the run JSON with the inherited DGAMMA port's pass rate.
+"Frozen" means `git diff loop-frozen-1 -- harness oracle tests fortran tools .kiro/steering .kiro/agents .kiro/hooks`
+is empty. Commits to routines/, runs/, site/ and .kiro/specs/ after the tag are expected and do not break the freeze.
 
-## Requirement 2: Cold Test Integrity
+## Requirement 1: Inherited flaws (DLNGAM, DGAMR)
 
-**User Story:** As a project auditor, I want confirmation that the exam is locked during these runs, so that I can trust the results are truly cold tests on unseen inputs.
+**User story:** As a verification engineer, I want Python ports of DLNGAM and DGAMR that call Kiro's healed
+routines/dgamma.py, so that I can see whether the inherited failure disappears in Python too, not only in the
+fixed Fortran.
 
-**Acceptance Criteria:**
-2.1. When the loop begins, it verifies `git diff loop-frozen-1 -- harness oracle tests fortran tools .kiro/steering .kiro/agents .kiro/hooks` is empty; if not, the run is marked VOID (stop reason "exam files changed during the round").
-2.2. During loop execution, if any trial detects changes to protected files, that trial is marked VOID and the loop exits.
-2.3. When a routine completes two consecutive failed rounds (each returning UNDEAD or STILL DEAD), the loop stops further rounds and records stop reason "two_failed_rounds_in_a_row".
+**Acceptance criteria**
+- 1.1 WHEN the loop ports DLNGAM or DGAMR, THE SYSTEM SHALL let the port call `dgamma` from routines/dgamma.py
+  (the HEALED port at f933cca) instead of re-porting DGAMMA.
+- 1.2 WHEN the trial of a DLNGAM or DGAMR port finishes, THE SYSTEM SHALL record per-range pass rates for the port
+  and for the compiled original on the same inputs, as for every other port.
+- 1.3 IF a DLNGAM or DGAMR port passes only because of the healed DGAMMA, THEN THE SYSTEM SHALL say so in the
+  ledger note, so the result is not counted as a new heal.
 
-## Requirement 3: Held-Out Trial Gate for HEALED
+## Requirement 2: Cold-test integrity
 
-**User Story:** As a result validator, I want HEALED verdicts to require both a dev trial and a held-out trial, so that the agent never sees held-out inputs and I can be certain a port is truly fixed.
+**User story:** As an auditor, I want proof that nothing in the exam changed during these runs, so that the
+results count as cold tests.
 
-**Acceptance Criteria:**
-3.1. When a routine's port returns RESURRECTED on the dev trial, a held-out trial (seed 7, 10,000 inputs) is launched outside the agent's view.
-3.2. The held-out trial result is recorded in the run JSON under `heldout` with keys `seed`, `n`, `verdict`, and `file`.
-3.3. A verdict of HEALED requires: port pass_rate ≥ 99.0% on every dev sub-domain AND held-out pass_rate ≥ 99.0% on every sub-domain AND original pass_rate < 95.0% on at least one sub-domain.
-3.4. If held-out verdict is UNDEAD or STILL DEAD, the routine is marked with that verdict, not HEALED.
+**Acceptance criteria**
+- 2.1 WHEN a cold run is started, THE SYSTEM SHALL first show that the frozen diff (see Introduction) is empty.
+  IF it is not empty, THEN the run SHALL NOT be reported as a cold test.
+- 2.2 WHEN the loop starts, THE SYSTEM SHALL refuse to run if any exam path has uncommitted changes
+  (harness/loop.py preflight, error "exam_dirty").
+- 2.3 WHILE the loop runs, IF an exam path changes during a round, THEN THE SYSTEM SHALL stop with stop reason
+  "exam files changed during the round: ..." and the trial verdict SHALL be VOID.
+- 2.4 THE SYSTEM SHALL never show the agent the held-out inputs, the referee values outside the feedback report,
+  or anything under harness/, oracle/, tests/ or runs/.
 
-## Requirement 4: Honest Reporting
+## Requirement 3: Held-out gate for HEALED
 
-**User Story:** As a project stakeholder, I want all outcomes—HEALED, UNDEAD, and STILL DEAD—recorded on the ledger and site with the same prominence and full metadata, so that I can audit success and failure equally.
+**User story:** As a reviewer, I want a heal to count only when inputs the agent never saw agree, so that a port
+cannot pass by fitting the dev inputs.
 
-**Acceptance Criteria:**
-4.1. Run JSON is saved to runs/ledger/<routine>_<run_id>.json with keys: `name`, `model`, `run_id`, `max_rounds`, `credit_cap`, `dev` {seed, n}, `heldout` {seed, n, verdict, file}, `start_commit`, `rounds[]`, `total_credits`, `stop_reason`, `result`.
-4.2. Each round in `rounds[]` includes pass_rate, max_ulp, median_ulp, p99_ulp, worst_x per sub-domain.
-4.3. STILL DEAD and UNDEAD verdicts are displayed on the site with the same text prominence as HEALED, including all trial metadata, credits spent, and stop reason.
-4.4. The ledger page lists all entries (HEALED, UNDEAD, STILL DEAD, VOID) sorted by routine name and trial timestamp.
+**Acceptance criteria**
+- 3.1 WHEN the dev trial (seed 1, n 2000) succeeds, THE SYSTEM SHALL run the held-out trial (seed 7, n 10000)
+  outside the agent's session.
+- 3.2 THE SYSTEM SHALL record the held-out result in the ledger under `heldout` with `seed`, `n`, `verdict` and `file`.
+- 3.3 IF the held-out trial also succeeds, THEN THE SYSTEM SHALL set `result` to the held-out verdict and stop with
+  "<verdict>_confirmed". HEALED itself means: port pass_rate >= 99.0% on every range AND the original's
+  pass_rate < 95.0% on at least one range (harness/verdict.py).
+- 3.4 IF the held-out trial does not succeed, THEN THE SYSTEM SHALL stop with "heldout_disagrees" and SHALL NOT
+  report the routine as healed.
 
-## Requirement 5: Upstream Report Draft
+## Requirement 4: Honest reporting
 
-**User Story:** As a maintainer preparing a bug report, I want a draft upstream report prepared for each HEALED flaw, so that I can review it and decide whether to file a formal issue.
+**User story:** As a judge or reader, I want failures shown as clearly as wins, so that I can trust the wins.
 
-**Acceptance Criteria:**
-5.1. When a routine achieves HEALED status, a plaintext draft is prepared and saved to `.kiro/specs/<routine>/<routine>.upstream.draft.txt`.
-5.2. The draft includes: routine name, failing input range, one-line description of the fix, and trial run identifiers (seed, size, pass rates).
-5.3. The draft is not filed automatically; a human reviews and decides whether to submit.
+**Acceptance criteria**
+- 4.1 WHEN a loop run ends, THE SYSTEM SHALL write runs/ledger/<name>_<run_id>.json with the keys `name`, `model`,
+  `run_id`, `max_rounds`, `credit_cap`, `dev`, `heldout`, `start_commit`, `rounds`, `total_credits`,
+  `stop_reason`, `result`, and commit it.
+- 4.2 THE SYSTEM SHALL record, for every round, its type (port, repair, reverted, no_gain, rejected), the credits
+  Kiro reported, the commit of the agent's verbatim change, the undo commit if any, and the trial result before
+  and after.
+- 4.3 WHEN the site is built, THE SYSTEM SHALL show every cold-test outcome (HEALED, UNDEAD, STILL DEAD, VOID) with
+  its credits and stop reason, using the same card layout as HEALED routines.
+- 4.4 THE SYSTEM SHALL take every number on the site from a committed run file and link to it.
 
-## Requirement 6: Per-Routine Credit Cap and Stop Rule
+## Requirement 5: Upstream report drafts
 
-**User Story:** As a resource manager, I want each cold test to spend at most 1.5 credits (default --credit-cap) and stop after two consecutive failed rounds, so that we conserve model calls on routines that are not converging.
+**User story:** As the maintainer of this project, I want a short draft report for each confirmed flaw, so that
+I can decide whether to file it with the maintained SLATEC forks.
 
-**Acceptance Criteria:**
-6.1. Loop initializes credit counter at 0 and failed-round counter at 0 per routine.
-6.2. Each completed dev trial charges 0.75 credits (two rounds = 1.5 max).
-6.3. Each UNDEAD or STILL DEAD round increments failed-round counter by 1.
-6.4. When failed-round counter reaches 2, loop stops further rounds and records stop reason "two_failed_rounds_in_a_row".
-6.5. Before starting a round, if `spent + estimate > credit_cap`, loop exits with stop reason "credit_cap (...)".
-6.6. Held-out trials do not count against the credit cap.
+**Acceptance criteria**
+- 5.1 WHEN a routine is HEALED and confirmed, THE SYSTEM SHALL produce a draft at
+  .kiro/specs/cold-heal-remaining-flaws/upstream/<name>.md with: routine, failing range, the original line, the
+  one-line fix, and the dev and held-out pass rates with their run files.
+- 5.2 THE SYSTEM SHALL NOT file anything upstream. A person reads the draft and decides.
 
-## Requirement 7: Flaw Ledger Integrity
+## Requirement 6: Credit cap and stop rules
 
-**User Story:** As an auditor, I want the Flaw Ledger to contain only flaws measured by the pipeline, so that I can rely on every number in it.
+**User story:** As the person paying for the credits, I want each cold run to stop early when it isn't working.
 
-**Acceptance Criteria:**
-7.1. The Flaw Ledger is built only from committed run JSON files under runs/ledger/.
-7.2. Each ledger entry references the run JSON filename and the git commit hash (recorded at trial time).
-7.3. No speculative or hand-typed numbers are added; all data come from trial output JSON.
+**Acceptance criteria**
+- 6.1 THE SYSTEM SHALL read the real credits of every Kiro call from the stream JSON
+  (harness/kiro_session.py) and add them to `total_credits`.
+- 6.2 WHEN a round is about to start, IF `total_credits` + the estimate (the most expensive call so far, or 0.5
+  before the first call) would exceed `--credit-cap`, THEN THE SYSTEM SHALL stop with "credit_cap (...)".
+  Cold runs use `--credit-cap 1.5`.
+- 6.3 WHEN two rounds in a row are undone (reverted, no_gain or rejected), THE SYSTEM SHALL stop with
+  "two_failed_rounds_in_a_row".
+- 6.4 WHEN the agent produces no change twice, THE SYSTEM SHALL stop with "no_diff_twice".
+- 6.5 IF a Kiro call is throttled (429), times out (900 s) or exits non-zero, THEN THE SYSTEM SHALL retry after
+  30 s and then 90 s, but never after the agent has already changed the port. IF all three attempts fail, THEN it
+  SHALL stop with "agent_error" and keep the credits already spent in the ledger.
