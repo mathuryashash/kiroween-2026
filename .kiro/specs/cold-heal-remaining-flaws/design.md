@@ -4,72 +4,77 @@
 
 The cold test feature integrates the following existing components:
 
-- **harness.loop**: Orchestrates rounds of agent edits and trials; runs one command per routine.
+- **harness.loop**: Orchestrates rounds of agent edits and trials; enforces credit cap (default 1.5), failed-round counter, frozen-tag check, and stops after two consecutive failures.
 - **harness.trial**: Runs the exam (original Fortran + port + mpmath referee) on a given routine and sub-domain range, outputs JSON with pass rates, ULP stats, and verdict.
 - **harness.autopsy**: Analyzes a failed trial to suggest which input range or code line failed and why.
-- **harness.transcription**: Logs trial metadata (toolchain, git commit, manifest hash) into run JSON.
-- **resurrector agent**: Receives autopsy hints; edits routines/<name>.py to fix failing cases; calls Kiro CLI to trigger trial re-run.
-- **guard hooks** (.kiro/hooks): Block reads/writes to protected files; enforce VOID on exam changes.
-- **site/tools/build.py**: Reads run JSON files and renders the ledger and routine pages.
+- **harness.transcription**: Checks that DATA constants are copied correctly from Fortran to Python (AST verification before import).
+- **harness.port_guard**: AST check (before import) that rejects ports importing anything other than `math`, or using open/exec/eval/__import__/compile/globals or dunder attributes; verdict is DISQUALIFIED.
+- **harness.port_runner**: Runs the port in a separate process.
+- **harness.verdict**: Computes verdicts from pass rates.
+- **resurrector agent**: Invoked as `kiro-cli chat --v3 --no-interactive --trust-all-tools --agent resurrector --model {model} --output-format stream-json "<prompt>"`; receives autopsy hints; edits routines/<name>.py to fix failing cases.
+- **guard hooks** (.kiro/hooks): Block reads/writes to protected files; mark trial VOID (stop reason "exam files changed during the round") if exam paths change.
+- **site/tools/build.py**: Reads committed run JSON files and renders the ledger and routine pages.
 
 ## Data Flow of One Cold Test Round
 
 ```
-1. User invokes: python -m harness.loop <routine> --model claude-haiku-4.5
+1. User invokes: python -m harness.loop <routine> --model claude-haiku-4.5 [--credit-cap 1.5]
 
-2. Loop checks:
-   - Git commit == loop-frozen-1 tag? If not, output VOID, exit.
+2. Loop preflight checks:
+   - Git diff loop-frozen-1 -- harness oracle tests fortran tools .kiro/steering .kiro/agents .kiro/hooks empty? If not, output VOID (stop reason "exam files changed during the round"), exit.
    - Routine in list of flawed originals (DPSI, DLNGAM, DGAMR)? If not, error.
 
 3. Trial execution (harness.trial):
-   - Compile Fortran original.
-   - Compile/import Python port from routines/<routine>.py.
+   - Compile Fortran original (or use fortran/variants/ if available).
+   - Import Python port from routines/<routine>.py; harness.port_guard AST check rejects non-math imports, open/exec/eval/__import__/compile/globals, dunder attributes → DISQUALIFIED.
    - For each sub-domain (tiny, small, negative, etc.):
      a. Generate test inputs (via hypothesis or fixed seed).
      b. Call Fortran original, Python port, mpmath referee on each input.
      c. Compute ULP(x) for each input; check pass(x) = ulp(x) <= allowed(x).
      d. Record pass_rate, max_ulp, median_ulp, p99_ulp, worst_x.
-   - Aggregate across sub-domains; determine verdict (RESURRECTED, UNDEAD, STILL DEAD).
-   - Write run JSON with all stats and verdict.
+   - Aggregate across sub-domains; determine verdict.
+   - Per-trial check: if exam files changed, mark VOID.
 
-4. Transcription (harness.transcription):
-   - Append toolchain (gfortran version, Python, numpy, mpmath versions) to run JSON.
-   - Append git commit hash of repo at trial time.
-   - Append sha256 manifest of harness/, oracle/, and routines/<routine>.py.
+4. Verdict interpretation:
+   - RESURRECTED: port pass_rate ≥ 99.0% on all sub-domains.
+   - HEALED: RESURRECTED AND original pass_rate < 95.0% on at least one sub-domain AND held-out trial also RESURRECTED.
+   - UNDEAD: port pass_rate ≥ 90.0% on all sub-domains but not RESURRECTED.
+   - STILL DEAD: port pass_rate < 90.0% on any sub-domain, or AST violation (DISQUALIFIED), or crash.
 
-5. Verdict check:
-   - IF verdict == STILL DEAD or UNDEAD:
-     a. Charge 0.75 credits; increment failed-round counter.
-     b. IF failed-round counter >= 2: skip further rounds, write stop reason, exit.
-     c. ELSE: invoke autopsy.
-   - IF verdict == RESURRECTED:
-     a. Charge 0.75 credits; increment success counter.
-     b. Schedule held-out trial (outside agent view) with seed 7, 10,000 inputs.
-     c. If held-out trial also RESURRECTED: mark HEALED in ledger, prepare upstream draft.
-     d. If held-out trial UNDEAD or STILL DEAD: mark UNDEAD/STILL DEAD in ledger.
-     e. Exit (do not continue rounds).
+5. Round accounting:
+   - Loop charges 0.75 credits per dev trial.
+   - If verdict == UNDEAD or STILL DEAD: failed-round counter += 1.
+   - If failed-round counter >= 2: stop further rounds, record stop reason "two_failed_rounds_in_a_row", exit.
+   - Before starting a round, if spent + estimate > credit_cap: stop, record stop reason "credit_cap (...)", exit.
 
-6. Autopsy (if continuing):
-   - harness.autopsy reads run JSON; identifies sub-domain and input(s) that failed worst.
-   - Computes autopsy hints: "input X in tiny range failed by Y ULP", "x + i - 1 line likely", etc.
-   - Outputs hint text to stdout or log.
+6. Held-out trial (after RESURRECTED):
+   - Loop schedules held-out trial (seed 7, n=10000, hidden from agent) in separate process.
+   - Result recorded in run JSON under `heldout` with keys seed, n, verdict, file.
+   - If held-out RESURRECTED: routine becomes HEALED candidate.
+   - If held-out UNDEAD/STILL DEAD: routine marked with that verdict.
 
-7. Agent invocation (if continuing and credits < 1.5):
-   - Loop writes autopsy hints to a temp file.
-   - Invokes: kiro-cli agent run --path .kiro/agents/resurrector.json --args "routine=<name> hints=<file>"
-   - Agent reads fortran/slatec/<routine>.f, routines/<routine>.py, and hints.
-   - Agent edits routines/<routine>.py to fix the failing case(s).
-   - Agent returns; loop checks for AST violations (imports, disallowed builtins).
+7. Autopsy (if UNDEAD/STILL DEAD and < 2 failures):
+   - harness.autopsy reads run JSON; identifies worst-failing sub-domain and input(s).
+   - Outputs hint text (sub-domain, failing input X, magnitude of error, likely line).
+
+8. Agent invocation (if continuing):
+   - Loop invokes: kiro-cli chat --v3 --no-interactive --trust-all-tools --agent resurrector --model {model} --output-format stream-json "<prompt>"
+   - Prompt includes routine name, autopsy hints, Fortran source.
+   - Agent edits routines/<routine>.py to fix failing case(s).
+   - Agent returns; loop checks for AST violations.
    - If AST clean: loop goes to step 3 (new trial). Else: DISQUALIFIED, exit.
 
-8. Loop output:
-   - Write final run JSON (with all round histories and final verdict) to runs/ledger/<routine>_<timestamp>.json.
-   - Commit run JSON to git (if not VOID).
-   - Optionally invoke site/tools/build.py to update site HTML.
+9. Run JSON generation:
+   - harness.transcription writes: toolchain (gfortran, Python, numpy, mpmath, scipy versions), git commit hash, sha256 manifest of harness/, oracle/, routines/<routine>.py.
+   - Loop writes final run JSON to runs/ledger/<routine>_<run_id>.json with keys: name, model, run_id, max_rounds, credit_cap, dev {seed, n}, heldout {seed, n, verdict, file}, start_commit, rounds[], total_credits, stop_reason, result.
 
-9. If HEALED, loop also:
-   - Prepares short upstream draft (routine, range, fix, trials) as .kiro/specs/<routine>/<routine>.upstream.draft.txt.
-   - Logs to stdout: "HEALED: <routine>, ready for upstream review."
+10. Output:
+    - Commit run JSON to git.
+    - Optionally invoke site/tools/build.py to render ledger and routine pages.
+
+11. If HEALED:
+    - Loop prepares draft upstream report as .kiro/specs/<routine>/<routine>.upstream.draft.txt.
+    - Human reviews and decides whether to file or discard.
 ```
 
 ## Enforcement of Requirements
@@ -86,34 +91,33 @@ The cold test feature integrates the following existing components:
 
 ## Error Handling
 
-### 429 Throttling
-If the Kiro API returns 429 (rate limit), the loop SHALL:
-- Log the error with timestamp.
-- Wait 30 seconds (or per Kiro guidance).
-- Retry the agent invocation up to 3 times.
-- If 3 retries fail: mark routine as VOID with reason "API throttling", exit.
+### 429 Throttling (Open Design Question)
+If the Kiro API returns 429 (rate limit):
+- Log the error with timestamp and attempt count.
+- Retry is an open design question: how many retries? what delay? what stop reason if all fail?
+- Current behavior should be recorded in stop reason and run JSON.
 
-### Timeouts
+### Timeouts (Open Design Question)
 If a trial or agent call exceeds 15 minutes:
 - Log timeout with routine name and round number.
-- Mark routine as VOID with reason "timeout", exit.
-- Do not retry.
+- Timeout is an open design question: stop immediately with reason "timeout" and mark VOID? Retry? Credit handling?
+- Current behavior should be recorded in stop reason and run JSON.
 
-### VOID Exam
-If guard hooks detect writes to harness/, oracle/, or tests/ during a run:
-- Mark run as VOID with reason "exam modified".
-- Write VOID to run JSON and commit.
-- Do not execute further rounds on that routine.
+### VOID Exam (exam files changed during the round)
+If `git diff loop-frozen-1 -- harness oracle tests fortran tools .kiro/steering .kiro/agents .kiro/hooks` is not empty:
+- Preflight: loop exits with VOID, no run JSON written.
+- Per-trial check: trial marked VOID, loop exits.
+- Run JSON records stop reason "exam files changed during the round".
 
-### AST Violations
-If the resurrected agent's code edit imports non-math modules or uses disallowed builtins:
-- harness.trial's AST check (before import) rejects the import.
+### AST Violations (DISQUALIFIED)
+If harness.port_guard detects non-math imports, open/exec/eval/__import__/compile/globals, or dunder attributes:
+- harness.trial's AST check (before import) rejects the port.
 - Trial returns DISQUALIFIED.
 - Loop marks routine as DISQUALIFIED, exits.
 
-### Missing Input Range
-If a routine is not in the list of flawed originals (DPSI, DLNGAM, DGAMR) or the range string is invalid:
-- Loop logs error and exits immediately without creating a run JSON.
+### Missing Routine
+If a routine is not in the list of flawed originals (DPSI, DLNGAM, DGAMR):
+- Loop logs error and exits without creating a run JSON.
 
 ## Correctness Properties
 
@@ -124,18 +128,20 @@ If a routine is not in the list of flawed originals (DPSI, DLNGAM, DGAMR) or the
 ### Property 2: Verdict Derivation
 **Claim:** A verdict (RESURRECTED, UNDEAD, STILL DEAD, HEALED) is derived correctly from pass_rate.
 **Validation:** harness/tests/ includes tests for verdict_from_pass_rates that check:
-- RESURRECTED: pass_rate ≥ 99.0 % on all sub-domains AND original pass_rate < 95.0 % on ≥ 1 sub-domain.
-- UNDEAD: pass_rate ≥ 90.0 % on all sub-domains but not RESURRECTED.
-- STILL DEAD: pass_rate < 90.0 % on any sub-domain.
+- RESURRECTED: port pass_rate ≥ 99.0 % on all sub-domains (original pass_rate irrelevant).
 - HEALED: RESURRECTED AND held-out trial also RESURRECTED AND original pass_rate < 95.0 % on ≥ 1 sub-domain.
+- UNDEAD: port pass_rate ≥ 90.0 % on all sub-domains but not RESURRECTED.
+- STILL DEAD: port pass_rate < 90.0 % on any sub-domain, or DISQUALIFIED, or crash.
 
 ### Property 3: Loop Termination
-**Claim:** The loop terminates in finite time and respects the credit cap.
+**Claim:** The loop terminates in finite time and respects the credit cap (default 1.5).
 **Validation:** Loop enforces:
-- Maximum 2 rounds per routine (credits = 0.75 + 0.75 = 1.5 max).
-- Exit after 2 consecutive failed rounds (UNDEAD or STILL DEAD).
-- Exit on RESURRECTED (held-out trial runs in parallel, not counted against loop budget).
-- Timeout on any single round (15 minutes).
+- Credit counter starts at 0; increments by 0.75 per dev trial.
+- Failed-round counter starts at 0; increments on UNDEAD or STILL DEAD.
+- Exit when failed-round counter ≥ 2 (stop reason "two_failed_rounds_in_a_row").
+- Exit when spent + estimate > credit_cap (stop reason "credit_cap (...)").
+- Held-out trials do not count against budget.
+- Timeout on any single call (15 minutes; stop reason "timeout", marked VOID).
 
 ### Property 4: AST Safety
 **Claim:** No port imports anything other than `math`; no disallowed builtins are used.
@@ -145,74 +151,95 @@ If a routine is not in the list of flawed originals (DPSI, DLNGAM, DGAMR) or the
 - Any dunder attribute access (e.g., `obj.__dict__`).
 - If any check fails, trial returns DISQUALIFIED immediately.
 
-### Property 5: Git Integrity
-**Claim:** Run JSON includes the git commit hash; loop verifies the repo is at loop-frozen-1 at entry.
-**Validation:** harness.transcription reads `git rev-parse HEAD` and includes the SHA in the JSON. Loop checks `git rev-list -n 1 loop-frozen-1` at entry and compares; if mismatch, outputs VOID.
+### Property 5: Exam Integrity
+**Claim:** Run JSON includes the git commit hash; loop verifies exam files are unchanged from loop-frozen-1.
+**Validation:** harness.transcription reads `git rev-parse HEAD` and includes the SHA in the JSON. Loop checks `git diff loop-frozen-1 -- harness oracle tests fortran tools .kiro/steering .kiro/agents .kiro/hooks` at entry; if not empty, outputs VOID (stop reason "exam files changed during the round"). Per-trial check repeats this; if violated, trial marked VOID.
 
 ## Data Schema (Run JSON)
 
 ```json
 {
-  "routine": "dpsi",
-  "verdict": "UNDEAD",
-  "credits_spent": 1.5,
-  "stop_reason": "two failed rounds",
+  "name": "<routine>",
+  "model": "<model>",
+  "run_id": "<timestamp>",
+  "max_rounds": <int>,
+  "credit_cap": <float>,
+  "dev": {
+    "seed": <int>,
+    "n": <int>
+  },
+  "heldout": {
+    "seed": <int>,
+    "n": <int>,
+    "verdict": "<verdict>",
+    "file": "<path_to_json>"
+  },
+  "start_commit": "<sha>",
   "rounds": [
     {
-      "round": 1,
-      "trial_type": "dev",
+      "round": <int>,
       "pass_rates": {
-        "overall": 68.5,
-        "small": 13.5,
-        "negative": 51.3
+        "overall": <float>,
+        "<subdomain>": <float>
       },
-      "max_ulp": { "overall": 1200.5, "small": 2000.3, "negative": 1500.2 },
-      "median_ulp": { "overall": 50.2, "small": 150.3, "negative": 80.1 },
-      "worst_x": { "small": 1.2345e-10 }
-    },
-    {
-      "round": 2,
-      "trial_type": "dev",
-      "pass_rates": { "overall": 69.2, "small": 14.1, "negative": 52.0 },
-      "max_ulp": { "overall": 1150.3, "small": 1950.2, "negative": 1480.1 },
-      "median_ulp": { "overall": 49.8, "small": 148.5, "negative": 78.9 },
-      "worst_x": { "small": 1.3456e-10 }
+      "max_ulp": {
+        "overall": <float>,
+        "<subdomain>": <float>
+      },
+      "median_ulp": {
+        "overall": <float>,
+        "<subdomain>": <float>
+      },
+      "p99_ulp": {
+        "overall": <float>,
+        "<subdomain>": <float>
+      },
+      "worst_x": {
+        "<subdomain>": <float>
+      }
     }
   ],
-  "toolchain": {
-    "gfortran_version": "GCC 16.x",
-    "python_version": "3.11.x",
-    "numpy_version": "1.26.x",
-    "mpmath_version": "1.4.1",
-    "scipy_version": "1.14.x"
-  },
-  "git_commit": "abc123def456...",
-  "manifest_sha256": "sha256_of_harness_oracle_routine_files",
-  "timestamp": "2026-11-17T20:30:45Z"
+  "total_credits": <float>,
+  "stop_reason": "<reason_or_null>",
+  "result": "<verdict>"
 }
 ```
 
-If HEALED:
+Top-level keys: `name`, `model`, `run_id`, `max_rounds`, `credit_cap`, `dev`, `heldout`, `start_commit`, `rounds[]`, `total_credits`, `stop_reason`, `result`.
 
+Example STILL DEAD:
 ```json
 {
-  "routine": "dcot",
-  "verdict": "HEALED",
-  "credits_spent": 0.75,
-  "stop_reason": null,
-  "rounds": [
-    {
-      "round": 1,
-      "trial_type": "dev",
-      "pass_rates": { "overall": 99.5, "near_pi": 99.8 }
-    }
-  ],
-  "held_out_trial": {
+  "name": "dpsi",
+  "model": "claude-haiku-4.5",
+  "run_id": "<timestamp>",
+  "credit_cap": 1.5,
+  "dev": { "seed": <int>, "n": <int> },
+  "heldout": null,
+  "start_commit": "<sha>",
+  "total_credits": 1.5,
+  "stop_reason": "two_failed_rounds_in_a_row",
+  "result": "STILL DEAD"
+}
+```
+
+Example HEALED:
+```json
+{
+  "name": "dgamma",
+  "model": "claude-haiku-4.5",
+  "run_id": "<timestamp>",
+  "credit_cap": 1.5,
+  "dev": { "seed": <int>, "n": <int> },
+  "heldout": {
     "seed": 7,
-    "n_inputs": 10000,
-    "pass_rates": { "overall": 99.2, "near_pi": 99.1 },
-    "verdict": "RESURRECTED"
+    "n": 10000,
+    "verdict": "RESURRECTED",
+    "file": "<path>"
   },
-  "upstream_draft_file": ".kiro/specs/dcot/dcot.upstream.draft.txt"
+  "start_commit": "<sha>",
+  "total_credits": 0.75,
+  "stop_reason": null,
+  "result": "HEALED"
 }
 ```
