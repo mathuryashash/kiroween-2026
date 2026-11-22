@@ -1,0 +1,39 @@
+{
+  "name": "resurrector",
+  "description": "probe agent",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "harness/**"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "fs_write",
+        "match": [
+          "routines/**"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "hooks": [
+    {
+      "name": "agent-pre",
+      "trigger": "PreToolUse",
+      "matcher": ".*",
+      "action": {
+        "type": "command",
+        "command": "py -3 tools/log_hook.py AgentPreToolUse"
+      }
+    }
+  ],
+  "prompt": "You are a probe agent. Follow instructions exactly."
+}
