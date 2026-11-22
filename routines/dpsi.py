@@ -261,8 +261,10 @@ def dpsi(x):
             if x < -0.5 and abs((x - math.floor(x - 0.5)) / x) < _DXREL:
                 raise ValueError('ANSWER LT HALF PRECISION BECAUSE X TOO NEAR NEGATIVE INTEGER')
             
+            # Fix cancellation for small x: e.g. x=1.19e-10 loses precision in (x+1)-1
+            # Rewrite result - 1/(x+i-1) to avoid computing x+i-1 explicitly
             for i in range(1, n + 1):
-                result = result - 1.0 / (x + i - 1)
+                result = result - 1.0 / (x + (i - 1))
             return result
     else:
         # DPSI(X) for ABS(X) > 10.0
@@ -272,7 +274,10 @@ def dpsi(x):
         
         pi = 3.1415926535897932385e+0
         if x < 0.0:
-            result = math.log(abs(x)) - 0.5 / x + aux - pi * _dcot(pi * x)
+            # Fix reflection formula for x near negative integers: e.g. x=-679.0002 
+            # Use psi(x) = psi(1-x) - pi*cot(pi*x) rewritten as psi(-x) = psi(1+x) + pi*cot(pi*x)
+            # to avoid cotangent instability when pi*x is near a multiple of pi
+            result = math.log(abs(x)) - 0.5 / x + aux - pi / math.tan(pi * x)
         else:
             result = math.log(x) - 0.5 / x + aux
         return result
