@@ -1,0 +1,35 @@
+{
+  "name": "dpsi",
+  "model": "claude-sonnet-4.5",
+  "run_id": "20261122T035153Z",
+  "max_rounds": 4,
+  "credit_cap": 3.0,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000,
+    "verdict": "HEALED",
+    "file": "runs/dpsi/port_20261122T035306Z.json"
+  },
+  "start_commit": "788865ac7d7a4024a8e8ef8d9474ebc155b98f7c",
+  "rounds": [
+    {
+      "round": 1,
+      "commit": "76664c1d937266a788e15ea528e89328e7573385",
+      "credits": 0.5598,
+      "agent_text": "Let me fix both issues:**Changes made:**\n\n1. **Small domain (line 265)**: Rewrote `1.0 / (x + i - 1)` as `1.0 / (x + (i - 1))` to avoid computing `(x + 1) - 1` which causes catastrophic cancellation for tiny x. The parentheses force evaluation of `i - 1` first (yielding 0 for i=1), then add to x, preserving x's precision.\n\n2. **Negative domain (line 275)**: Replaced `pi * _dcot(pi * x)` with `pi / math.tan(pi * x)`. Since cot(\u03b8) = 1/tan(\u03b8), this is mathematically equivalent but uses the stdlib tan which has better numerics near multiples of \u03c0 than the Chebyshev-based _dcot for large arguments.",
+      "trial_before": "STILL DEAD, overall 67.15%, small 13.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 48.5%",
+      "trial_after": "HEALED, overall 100.00%, small 100.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 100.0%",
+      "trial_after_file": "runs/dpsi/port_20261122T035246Z.json",
+      "type": "repair"
+    }
+  ],
+  "total_credits": 0.5598,
+  "stop_reason": "healed_confirmed",
+  "result": "HEALED",
+  "final_dev_trial": "HEALED, overall 100.00%, small 100.0%, mid 100.0%, large 100.0%, near_root 100.0%, negative 100.0%",
+  "end": "20261122T035306Z"
+}
