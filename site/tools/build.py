@@ -63,6 +63,42 @@ ENTRIES = [
                        "fixes to the loop were made while watching earlier DCOT runs fail, so DCOT is "
                        "not a cold test either. Every run, failed ones included, is in the history."),
     },
+    {
+        "name": "dpsi",
+        "title": "DPSI, the digamma function",
+        "mp_fn": "digamma",
+        "fortran_lines": [140, 142], "bug_lines": [141],
+        "fix_marker": "x + (i - 1)", "port_window": [3, 1],
+        "flaw": ("For x near zero, on either side, the loop computes X+I-1 as (x + 1) - 1, the same slip "
+                 "as in DGAMMA, which throws away most of x's digits just before dividing by it."),
+        "port_dev_run": "runs/dpsi/port_20261122T035246Z.json",
+        "port_heldout_run": "runs/dpsi/port_20261122T035306Z.json",
+        "story_commits": ["3a2c1bd", "7a63326", "cfcaa58", "7349dcd", "d7ec522", "4c0b2e5", "ba04301",
+                          "0236ed6", "76664c1", "845953f", "2d9f682", "5a00da9", "8c41a19"],
+        "faithful_commit": "3a2c1bd",   # its trial (7a63326): identical to the compiled original
+        "samples": [1.187877702770561e-10, 1e-7, 0.001, 0.3, 2.5, -1.0025739519280612e-06, -0.0001, -2.3],
+        "how": "loop",
+        "how_label": "healed by the one-command loop, on its second cold run",
+        # The road from STILL DEAD to HEALED, read from committed ledgers.
+        "attempts": [
+            {"ledger": "runs/ledger/dpsi_20261117T193921Z.json",
+             "note": ("Round 1 made two ranges worse and the loop undid it. Round 2 changed nothing useful "
+                      "and was undone too; Kiro wrote that the failures were \"inherent to the original\". "
+                      "The autopsy had already pointed at line 265, x + i - 1.")},
+            {"between": ("Nothing in the exam or the loop changed: the exam is identical to tag "
+                         "loop-frozen-1, and Kiro's first prompt was the same text in both runs apart from the "
+                         "commit hash. Only the model changed, from claude-haiku-4.5 to claude-sonnet-4.5, "
+                         "following the plan from the first day: start every routine on Haiku and move up "
+                         "only when Haiku gets stuck.")},
+            {"ledger": "runs/ledger/dpsi_20261122T035153Z.json",
+             "note": ("One round. Kiro read only routines/dpsi.py, changed line 265 to x + (i - 1) and also "
+                      "rewrote the reflection line. The held-out trial agreed.")},
+        ],
+        "ablation": "runs/dpsi/ablate_20261122T035821Z.json",
+        "disclosure": ("Cold run 1 failed and stays in the history. Retrying on a bigger model was my call, "
+                       "made after seeing it fail; the loop and the exam were not touched. DPSI's flaw is the "
+                       "same pattern as DGAMMA's, so it is a weaker test of generality than a new kind of bug."),
+    },
 ]
 
 
@@ -98,6 +134,9 @@ def domains(run: dict) -> dict:
 
 def entry_data(e: dict) -> dict:
     out = {k: e[k] for k in ("name", "title", "flaw", "disclosure", "how", "mp_fn", "bug_lines")}
+    out["how_label"] = e.get("how_label")
+    out["attempts"] = [attempt_data(a) for a in e.get("attempts", [])]
+    out["ablation"] = ablation_data(e["ablation"]) if e.get("ablation") else None
     out["runs"] = {}
     src = (REPO / "fortran" / "slatec" / f"{e['name']}.f").read_text(encoding="utf-8", errors="replace").splitlines()
     a, b = e["fortran_lines"]
@@ -134,6 +173,37 @@ def entry_data(e: dict) -> dict:
     return out
 
 
+def attempt_data(a: dict) -> dict:
+    """One step of a routine's road to its verdict: a committed loop ledger, or a note between runs."""
+    if "between" in a:
+        return {"between": a["between"]}
+    led, commit = committed_json(a["ledger"])
+    rounds = [{"round": r.get("round"), "type": r.get("type"), "credits": r.get("credits"),
+               "trial_after": r.get("trial_after"), "regressions": r.get("regressions"),
+               "commit": r.get("commit"), "undo_commit": r.get("undo_commit")} for r in led["rounds"]]
+    return {"file": a["ledger"], "url": f"{GH}/blob/{commit}/{a['ledger']}", "model": led["model"],
+            "run_id": led["run_id"], "credits": led["total_credits"], "stop_reason": led["stop_reason"],
+            "result": led.get("result") or (led.get("final_dev_trial") or "").split(",")[0] or None,
+            "rounds": rounds, "note": a.get("note", "")}
+
+
+def ablation_data(rel: str) -> dict:
+    """Which edit of the healing round did the work: each code hunk reverted on its own."""
+    data, commit = committed_json(rel)
+    hunks = []
+    for h in data["hunks"]:
+        lines = [ln for ln in h["hunk_text"].splitlines()[1:] if ln[:1] in "+-"]
+        code = [ln for ln in lines if not ln[1:].strip().startswith("#")]
+        if not code:
+            continue                                   # comment-only hunk
+        hurt = {d: [s["baseline_pass_rate"], s["without_this_hunk_pass_rate"]]
+                for d, s in h["effects"].items() if s["delta"] < 0}
+        pad = min(len(ln[1:]) - len(ln[1:].lstrip()) for ln in code)
+        hunks.append({"code": [ln[0] + " " + ln[1 + pad:] for ln in code], "hurt_without": hurt})
+    return {"file": rel, "url": f"{GH}/blob/{commit}/{rel}", "n": data["n"], "seed": data["seed"],
+            "hunks": hunks}
+
+
 def _load(name: str, src: str):
     import types
     mod = types.ModuleType(name)
@@ -166,7 +236,7 @@ def samples(e: dict) -> list:
 CENSUS_NOTES = {"dgamr": "calls DGAMMA; passes when linked to the fixed DGAMMA",
                 "dlngam": "calls DGAMMA; passes when linked to the fixed DGAMMA",
                 "derf": "already known: reported publicly in 2012",
-                "dpsi": "cold test 1: the loop did not heal it (loop run 20261117T193921Z)"}
+                "dpsi": "cold run 1 failed;"}
 
 
 def census_summary() -> dict | None:

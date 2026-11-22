@@ -12,7 +12,7 @@ Done items name the commit or file that does them.
 - [ ] 8. Cold run DLNGAM: `python -m harness.loop dlngam --model claude-haiku-4.5 --credit-cap 1.5`. Commit the ledger. _Requirements: 1.1, 1.2, 4.1, 6.2_
 - [ ] 9. Cold run DGAMR the same way. _Requirements: 1.1, 1.2, 4.1, 6.2_
 - [ ] 10. Add the ledger note for DLNGAM/DGAMR results that pass only because of the healed DGAMMA. _Requirements: 1.3_
-- [ ] 11. DPSI cold run 2 on the frozen loop with `--credit-cap 1.5`. Report the result whatever it is. _Requirements: 2.1, 4.1, 4.3_
+- [x] 11. DPSI cold run 2 on the frozen loop. Planned `--credit-cap 1.5`; actually run with `--model claude-sonnet-4.5 --credit-cap 3.0` (the only change from run 1 is the model). HEALED in one round, held-out confirmed, 0.56 credits (76664c1, 845953f, 2d9f682, ledger runs/ledger/dpsi_20261122T035153Z.json). Ablation: the `x + (i - 1)` line does all the work (runs/dpsi/ablate_20261122T035821Z.json). _Requirements: 2.1, 4.1, 4.3_
 - [ ] 12. For each HEALED routine, have the resurrector write .kiro/specs/cold-heal-remaining-flaws/upstream/<name>.md (routine, range, original line, fix, dev and held-out numbers with run files). A person reviews it; nothing is filed automatically. _Requirements: 5.1, 5.2_
 - [ ] 13. Rebuild the site (`python site/tools/build.py`), run `python site/tools/test_site.py`, and check that every new outcome has a card with its credits and stop reason and links to its run file. _Requirements: 4.3, 4.4_
 - [ ] 14. Update README.md with each cold run: routine, verdict, credits, stop reason. _Requirements: 4.3_

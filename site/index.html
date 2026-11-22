@@ -86,6 +86,21 @@ ol.story li{margin:6px 0}
 ol.story code{font-size:.8rem}
 .note{margin-top:14px;font-size:.85rem;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
 
+.road{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+.road h4{font-size:1rem;margin-bottom:4px}
+.att{position:relative;margin:12px 0 0 6px;padding:10px 12px 10px 16px;background:var(--panel2);border-radius:8px;
+  border-left:3px solid var(--dead)}
+.att.won{border-left-color:var(--ok)}
+.att .meta{font-size:.82rem;color:var(--muted);margin-top:2px}
+.att ol{margin:8px 0 0 1.2em;font-size:.86rem}
+.att li{margin:4px 0}
+.att .why{font-size:.86rem;margin-top:8px}
+.between{margin:12px 0 0 6px;padding:8px 12px 8px 16px;font-size:.88rem;border-left:3px dashed #6b5a96;color:var(--text)}
+.between b{color:var(--link)}
+.tag-undo{color:var(--dead);font-weight:600} .tag-keep{color:var(--ok);font-weight:600}
+.abl td:first-child{white-space:pre;text-align:left}
+.sub{font-size:.75rem;color:var(--muted);margin-top:4px}
+
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
 .step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
 .step b{display:block;margin-bottom:4px}
@@ -195,11 +210,46 @@ $("#stats").innerHTML = [
 $("#ledger").innerHTML = L.routines.map(r => {
   const h = r.runs.port_heldout, d = worstDomain(h), o = h.original_on_same_inputs[d];
   return `<a class="lrow" href="#case-${r.name}">
-    <div><div class="lname">${r.name.toUpperCase()}</div>${badge(h.verdict)}</div>
+    <div><div class="lname">${r.name.toUpperCase()}</div>${badge(h.verdict)}${r.attempts && r.attempts.some(a => a.result === "STILL DEAD") ? `<div class="sub">after a failed first run</div>` : ""}</div>
     <div>${esc(r.flaw)}</div>
     <div class="delta">range <b>${esc(d)}</b><br><span class="from">${pct(o.pass_rate)}</span> &rarr; <span class="to">${pct(h.domains[d].pass_rate)}</span> pass</div>
   </a>`;
 }).join("");
+
+const ROUND = {port: ["blind port", "keep"], repair: ["kept", "keep"], reverted: ["made it worse, undone", "undo"],
+  no_gain: ["no range improved, undone", "undo"], rejected: ["undone by the overfit guard", "undo"],
+  no_diff: ["no change", "undo"], agent_error: ["agent error", "undo"]};
+function road(r) {
+  if (!r.attempts || !r.attempts.length) return "";
+  const steps = r.attempts.map((a, i) => {
+    if (a.between) return `<div class="between"><b>What changed between the runs.</b> ${esc(a.between)}</div>`;
+    const won = a.result === "HEALED" || a.result === "RESURRECTED";
+    const rounds = a.rounds.map(x => {
+      const [label, kind] = ROUND[x.type] || [x.type, "undo"];
+      const ov = x.trial_after ? (x.trial_after.match(/overall [\d.]+%/) || [x.trial_after])[0] : "";
+      const after = ov ? ` → ${esc(ov)}` : "";
+      const regs = x.regressions && x.regressions.length ? ` (${esc(x.regressions.join("; "))})` : "";
+      const link = x.commit ? ` <a href="${L.repo}/commit/${x.commit}"><code>${x.commit.slice(0, 7)}</code></a>` : "";
+      return `<li>round ${x.round}: <span class="tag-${kind}">${esc(label)}</span>${regs}${after}${link}</li>`;
+    }).join("");
+    return `<div class="att${won ? " won" : ""}">
+      <div>${badge(a.result || "STILL DEAD")} <b>Cold run ${i === 0 ? 1 : 2}</b></div>
+      <div class="meta">${esc(a.model)} · ${a.credits.toFixed(2)} credits · stopped: ${esc(a.stop_reason)} · <a href="${a.url}">${esc(a.file)}</a></div>
+      <ol>${rounds}</ol>
+      <p class="why">${esc(a.note)}</p></div>`;
+  }).join("");
+  let abl = "";
+  if (r.ablation) {
+    const rows = r.ablation.hunks.map(h => {
+      const hurt = Object.entries(h.hurt_without);
+      const eff = hurt.length ? hurt.map(([d, [b, w]]) => `${esc(d)} ${pct(b)} → <span class="bad">${pct(w)}</span>`).join("<br>") : "no range changes";
+      return `<tr><td>${esc(h.code.join("\n"))}</td><td style="text-align:left">${eff}</td></tr>`;
+    }).join("");
+    abl = `<p class="small" style="margin-top:14px">Which edit did the work? Each change in the healing round was undone on its own and re-tried (${r.ablation.n.toLocaleString("en-US")} inputs, seed ${r.ablation.seed}, <a href="${r.ablation.url}">${esc(r.ablation.file)}</a>):</p>
+      <div class="scroll"><table class="t abl"><thead><tr><th>Kiro's edit</th><th style="text-align:left">without it</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  return `<div class="road"><h4>From STILL DEAD to HEALED</h4>${steps}${abl}</div>`;
+}
 
 $("#cases").innerHTML = L.routines.map(r => {
   const h = r.runs.port_heldout, dev = r.runs.port_dev, d = worstDomain(h);
@@ -228,7 +278,7 @@ $("#cases").innerHTML = L.routines.map(r => {
     `<li><a href="${c.url}"><code>${c.commit.slice(0, 7)}</code></a> ${esc(c.subject.length > 150 ? c.subject.slice(0, 150) + "…" : c.subject)}</li>`).join("");
   return `<article class="case" id="case-${r.name}">
     <div class="case-h"><h3>${esc(r.title)}</h3>${badge(h.verdict)}
-      <span class="small">${r.how === "loop" ? "healed by the one-command loop" : "healed by a hand-run loop"}</span></div>
+      <span class="small">${esc(r.how_label || (r.how === "loop" ? "healed by the one-command loop" : "healed by a hand-run loop"))}</span></div>
     <div class="case-b">
       <p>${esc(r.flaw)}</p>
       <p class="small" style="margin-top:10px">Held-out trial: ${h.n.toLocaleString("en-US")} inputs (seed ${h.seed}), pass rate per range, compiled original vs Kiro's port.
@@ -243,6 +293,7 @@ $("#cases").innerHTML = L.routines.map(r => {
         <div class="scroll"><table class="t"><thead><tr><th>x</th><th>referee (50 digits)</th><th>faithful port</th><th>ULP</th><th>healed port</th><th>ULP</th><th>allowed ULP</th></tr></thead><tbody>${samples}</tbody></table></div>
         <p class="small">The faithful port is Kiro's translation before healing (<code>${r.faithful_commit.slice(0, 7)}</code>). Its trial matched the compiled original on every range. The allowance grows where the function is very sensitive to its input, such as next to a pole, because x itself is only exact to half an ULP.</p>
       </details>
+      ${road(r)}
       <details><summary>How it got here: ${r.story.length} commits, failed attempts included</summary><ol class="story">${story}</ol></details>
       <p class="note">${esc(r.disclosure)}</p>
     </div></article>`;
