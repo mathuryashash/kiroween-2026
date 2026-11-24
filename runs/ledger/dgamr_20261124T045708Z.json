@@ -1,0 +1,78 @@
+{
+  "name": "dgamr",
+  "model": "claude-sonnet-4.5",
+  "run_id": "20261124T045708Z",
+  "max_rounds": 4,
+  "credit_cap": 6.0,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000
+  },
+  "start_commit": "16c0679c824c6e6466e3ea475c198229561f4e5e",
+  "rounds": [
+    {
+      "round": 0,
+      "type": "port",
+      "commit": "75bc3bc61e2c7b4ee147642d6c4de4050d53d9fc",
+      "credits": 1.8323
+    },
+    {
+      "round": 1,
+      "commit": "567e095e3a005598528a8e5329d37d802c414f90",
+      "credits": 0.7353,
+      "agent_text": "GAM = -1.0`\n- Python (current): `math.floor(x) = -29.0`, then `-math.floor(x) = 29.0`, then `29.0 % 2.0 = 1.0`, then `1.0 + 0.1 = 1.1`, then `int(1.1) = 1`, so `sgngam = 1.0` \u2717\n\nI need to use `math.trunc` instead of `math.floor` for the AINT translation!Fixed dlgams sign calculation: used math.trunc (AINT) instead of math.floor for negative x=-28.56. Fortran AINT(-28.56)=-28, floor=-29, causing wrong sign (sgngam=1 vs -1). The trunc/floor difference affects MOD result parity, flipping the sign for half of negative non-integers. This fixes negative domain and positive x>10 that also use dlgams.",
+      "trial_before": "STILL DEAD, overall 34.95%, small 7.1%, mid 71.6%, negative 24.7%",
+      "trial_after": "STILL DEAD, overall 37.45%, small 7.1%, mid 71.6%, negative 33.0%",
+      "trial_after_file": "runs/dgamr/port_20261124T045945Z.json",
+      "type": "repair"
+    },
+    {
+      "round": 2,
+      "commit": "d9d7c41831f3df6ce85cc15f1903174af63db483",
+      "credits": 1.0199,
+      "agent_text": "irect dgamma which is more accurate, while for negative x with |x| > 10, we use the log formula to avoid issues.\n\nLet me implement this fix:**Change made**: Modified the threshold logic in dgamr to use direct `1.0 / dgamma(x)` for all positive x (not just |x|\u226410), since positive x won't cause overflow in dgamma. The log-gamma path is now only used for negative x with |x|>10 where it's needed to avoid underflow. This fixes x=11.36 mid-domain failures where the log-based approximation introduced unnecessary error. The trunc fix from Round 1 is kept since ablation showed it helps negative domain.",
+      "trial_before": "STILL DEAD, overall 37.45%, small 7.1%, mid 71.6%, negative 33.0%",
+      "trial_after": "STILL DEAD, overall 38.05%, small 7.1%, mid 73.3%, negative 33.0%",
+      "trial_after_file": "runs/dgamr/port_20261124T050057Z.json",
+      "type": "repair"
+    },
+    {
+      "round": 3,
+      "commit": "6125910e2cfefb18c5c310c984804c77d4506bf5",
+      "credits": 0.5531,
+      "agent_text": "for x=11.36 showed the 60-digit run was ALSO wrong (1174 ULP from reference), indicating a logic error not rounding. When x > 10, `dgamma(x)` uses the asymptotic formula `exp((y-0.5)*log(y) - y + sq2pil + d9lgmc(y))`, which produces a large value. Inverting that large value (1/GAMMA(11.36)) loses precision. The correct approach for DGAMR when |x| > 10 is to compute the reciprocal directly via `exp(-log(GAMMA(x)))`, which the log-gamma path does. My Round 2 change incorrectly sent all positive x through direct inversion; this restores the original Fortran's threshold at |x| = 10 for both signs.",
+      "trial_before": "STILL DEAD, overall 38.05%, small 7.1%, mid 73.3%, negative 33.0%",
+      "trial_after": "STILL DEAD, overall 37.45%, small 7.1%, mid 71.6%, negative 33.0%",
+      "trial_after_file": "runs/dgamr/port_20261124T050141Z.json",
+      "type": "reverted",
+      "regressions": [
+        "mid 73.29% -> 71.57%"
+      ],
+      "undo_commit": "45451fb1772817d20820fb1130456a422e819d5b"
+    },
+    {
+      "round": 4,
+      "commit": "3738b8c432114f2d392a190d32985f579f1c477b",
+      "credits": 0.464,
+      "agent_text": "og-gamma for |x| > 10.**Change made:** Reverted Round 2's logic change at lines 362-367. Now uses log-gamma for ALL inputs with |x| > 10, not just negative x.\n\n**Explanation:** The ablation shows Round 2 hurt mid-domain by 1.9%. The autopsy for x=11.36 confirms the 60-digit run was also wrong - a logic error, not rounding. The original SLATEC uses log-gamma for |x| > 10 (both signs) to avoid overflow/underflow when inverting large gamma values. Round 2 incorrectly assumed positive x had no overflow risk, but 1/DGAMMA(11.36) loses precision because DGAMMA uses an asymptotic formula for large x.",
+      "trial_before": "STILL DEAD, overall 38.05%, small 7.1%, mid 73.3%, negative 33.0%",
+      "trial_after": "STILL DEAD, overall 37.45%, small 7.1%, mid 71.6%, negative 33.0%",
+      "trial_after_file": "runs/dgamr/port_20261124T050219Z.json",
+      "type": "reverted",
+      "regressions": [
+        "mid 73.29% -> 71.57%"
+      ],
+      "undo_commit": "9139aa6e0239c26cf19faedc5653148ca2cd5f7e"
+    }
+  ],
+  "total_credits": 4.6046,
+  "stop_reason": "two_failed_rounds_in_a_row",
+  "result": null,
+  "cold": true,
+  "final_dev_trial": "STILL DEAD, overall 38.05%, small 7.1%, mid 73.3%, negative 33.0%",
+  "end": "20261124T050219Z"
+}
