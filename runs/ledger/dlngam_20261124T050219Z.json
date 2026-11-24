@@ -1,0 +1,52 @@
+{
+  "name": "dlngam",
+  "model": "claude-sonnet-4.5",
+  "run_id": "20261124T050219Z",
+  "max_rounds": 4,
+  "credit_cap": 6.0,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000
+  },
+  "start_commit": "8d0b2739797e9bec76eb485a0276f6c4c0b0d971",
+  "rounds": [
+    {
+      "round": 0,
+      "type": "port",
+      "commit": "174a755902da97f302d1290341486ba5482cb100",
+      "credits": 1.5487
+    },
+    {
+      "round": 1,
+      "commit": "a99a14110091e92849d1b5258a65569fb4684c54",
+      "credits": 0.6821,
+      "agent_text": "ch computes `log(1+x)` accurately for small x**. When `_dgamma(x) \u2248 1`, compute `log(_dgamma(x))` as `log1p(_dgamma(x) - 1)`.**Change made:** When `abs(x) <= 10`, instead of `math.log(abs(_dgamma(x)))` which loses precision when `gamma(x) \u2248 1`, I now check if `abs(gamma) - 1 < 0.5` and use `math.log1p(abs_gamma - 1)` which accurately computes `log(1 + (abs_gamma - 1)) = log(abs_gamma)` for values near 1. This fixes the catastrophic precision loss for inputs near 1 and 2 where gamma returns values very close to 1.0, addressing the near_1 (6% \u2192 target 99%) and near_2 (41% \u2192 target 99%) failures.",
+      "trial_before": "STILL DEAD, overall 54.65%, tiny 0.3%, small 60.7%, near_1 6.0%, near_2 41.0%, mid 99.7%, large 100.0%, negative 54.2%",
+      "trial_after": "STILL DEAD, overall 54.65%, tiny 0.3%, small 60.7%, near_1 6.0%, near_2 41.0%, mid 99.7%, large 100.0%, negative 54.2%",
+      "trial_after_file": "runs/dlngam/port_20261124T050446Z.json",
+      "type": "no_gain",
+      "undo_commit": "f626ff3923f73ad30d5b8a1ccaf41745d39d4186"
+    },
+    {
+      "round": 2,
+      "commit": "58f33e7de968d7c9d6822fddc068fecde877586c",
+      "credits": 0.8948,
+      "agent_text": "d x=2, gamma(x) is close to 1.0+\u03b5 where \u03b5 is tiny.\nComputing `log(abs(1+\u03b5))` loses precision because abs() is applied before subtraction.\nThe fix: compute gamma_val first, then when it's near 1 and positive, use `log1p(gamma_val-1.0)`.\nThis computes the subtraction `gamma_val - 1.0` BEFORE any abs(), preserving the precise \u03b4.\nThen `log1p(\u03b4)` accurately computes `log(1+\u03b4)` without catastrophic cancellation.\nThe condition `gamma_val > 0` ensures log1p gets the right sign (gamma is positive near 1 and 2).\nFor other values or negative gamma, fall back to the original `log(abs(gamma_val))` formula.",
+      "trial_before": "STILL DEAD, overall 54.65%, tiny 0.3%, small 60.7%, near_1 6.0%, near_2 41.0%, mid 99.7%, large 100.0%, negative 54.2%",
+      "trial_after": "STILL DEAD, overall 54.65%, tiny 0.3%, small 60.7%, near_1 6.0%, near_2 41.0%, mid 99.7%, large 100.0%, negative 54.2%",
+      "trial_after_file": "runs/dlngam/port_20261124T050552Z.json",
+      "type": "no_gain",
+      "undo_commit": "68e5cbbade4a1138f58e5d6beadf38dd50b16b11"
+    }
+  ],
+  "total_credits": 3.1256,
+  "stop_reason": "two_failed_rounds_in_a_row",
+  "result": null,
+  "cold": true,
+  "final_dev_trial": "STILL DEAD, overall 54.65%, tiny 0.3%, small 60.7%, near_1 6.0%, near_2 41.0%, mid 99.7%, large 100.0%, negative 54.2%",
+  "end": "20261124T050552Z"
+}
