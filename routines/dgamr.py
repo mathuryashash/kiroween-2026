@@ -340,7 +340,8 @@ def dlgams(x):
         return dlgam, sgngam
     
     # Determine sign for negative X
-    int_val = int((-(math.floor(x))) % 2.0 + 0.1)
+    # Fixed for x=-28.56, x=11.36: AINT truncates toward zero, not floor toward -inf
+    int_val = int((-(math.trunc(x))) % 2.0 + 0.1)
     if int_val == 0:
         sgngam = -1.0
     
