@@ -1,0 +1,31 @@
+{
+  "name": "dlngam",
+  "model": "claude-haiku-4.5",
+  "run_id": "20261124T034238Z",
+  "max_rounds": 4,
+  "credit_cap": 1.5,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000,
+    "verdict": "HEALED",
+    "file": "runs/dlngam/port_20261124T034455Z.json"
+  },
+  "start_commit": "d4f65fe81c68aa3fcbc8fe7c727b4d5579a3598b",
+  "rounds": [
+    {
+      "round": 0,
+      "type": "port",
+      "commit": "9840935666913987b181154e8ee6b3f3296ac55b",
+      "credits": 0.8468
+    }
+  ],
+  "total_credits": 0.8468,
+  "stop_reason": "healed_confirmed",
+  "result": "HEALED",
+  "final_dev_trial": "HEALED, overall 100.00%, tiny 100.0%, small 100.0%, near_1 100.0%, near_2 100.0%, mid 100.0%, large 100.0%, negative 100.0%",
+  "end": "20261124T034455Z"
+}
