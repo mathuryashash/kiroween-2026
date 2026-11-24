@@ -389,21 +389,25 @@ def dgamr(x):
     Compute the reciprocal of the Gamma function.
     Returns 1 / GAMMA(X).
     
-    For |X| <= 10: uses DGAMMA directly.
+    For |X| <= 1.5: uses DLGAMS (log-based, stable) to avoid cancellation in _dgamma's x+i-1 term.
+    For 1.5 < |X| <= 10: uses DGAMMA directly (numerically stable in this range).
     For |X| > 10: uses DLGAMS (log-based computation) to avoid overflow/underflow.
     """
     if x <= 0.0 and int(x) == x:
         # X is 0 or a negative integer: GAMMA is undefined or infinite
         return 0.0
     
-    if abs(x) <= 10.0:
-        # Direct computation via DGAMMA
-        g = _dgamma(x)
-        if g == 0.0:
-            return float('inf')
-        return 1.0 / g
+    # Failing inputs 1.3368227206604834e-12 and -1.426334358567423e-06 suffer from
+    # catastrophic cancellation in _dgamma's division by (x + i - 1) when x is tiny
+    # or close to zero. Use log-based path for |x| <= 1.5.
+    if abs(x) <= 1.5 or abs(x) > 10.0:
+        # Use logarithmic computation via DLGAMS
+        alngx, sgngx = _dlgams(x)
+        # dgamr = sgngx * exp(-alngx)
+        return sgngx * math.exp(-alngx)
     
-    # For |X| > 10: use logarithmic computation
-    alngx, sgngx = _dlgams(x)
-    # dgamr = sgngx * exp(-alngx)
-    return sgngx * math.exp(-alngx)
+    # For 1.5 < |X| <= 10: direct computation via DGAMMA (numerically stable here)
+    g = _dgamma(x)
+    if g == 0.0:
+        return float('inf')
+    return 1.0 / g
