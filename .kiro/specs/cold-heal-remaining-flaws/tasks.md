@@ -8,7 +8,7 @@ Done items name the commit or file that does them.
 - [x] 4. DGAMMA HEALED and confirmed: dev seed 1 n 2000 and held-out seed 7 n 10000 on a clean exam (f933cca). _Requirements: 3.3_
 - [x] 5. DCOT HEALED and confirmed (loop run 20261117T193644Z, 0.25 credits, 98ccc2d). Marked as not a cold test. _Requirements: 3.3, 4.3_
 - [x] 6. DPSI cold run 1: STILL DEAD, stop "two_failed_rounds_in_a_row", 0.93 credits (ba04301); shown on the site. _Requirements: 4.1, 4.3, 6.3_
-- [ ] 7. Decide how DLNGAM and DGAMR ports reach the healed DGAMMA (port_guard allows only `math`): copy routines/dgamma.py into each port, or allow `from routines.dgamma import dgamma`. The second changes the exam, so it would need a new freeze tag (loop-frozen-2) before any cold run. _Requirements: 1.1, 2.1_
+- [x] 7. Decided 23 Nov 2026 (by hand, not by the agent): ports stay self-contained, so the exam is unchanged and loop-frozen-1 still holds. The blind-port prompt already tells the agent to put every helper it needs in the same file, so a DLNGAM or DGAMR port carries its own literal translation of DGAMMA, inherited flaw included. Healing it is part of the cold test. _Requirements: 1.1, 2.1_
 - [ ] 8. Cold run DLNGAM: `python -m harness.loop dlngam --model claude-haiku-4.5 --credit-cap 1.5`. Commit the ledger. _Requirements: 1.1, 1.2, 4.1, 6.2_
 - [ ] 9. Cold run DGAMR the same way. _Requirements: 1.1, 1.2, 4.1, 6.2_
 - [ ] 10. Add the ledger note for DLNGAM/DGAMR results that pass only because of the healed DGAMMA. _Requirements: 1.3_
