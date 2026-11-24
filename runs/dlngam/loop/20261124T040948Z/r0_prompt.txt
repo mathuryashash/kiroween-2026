@@ -1,0 +1,5 @@
+Port the SLATEC FNLIB routine DLNGAM to Python as routines/dlngam.py.
+
+Read the steering files in .kiro/steering/ first, then fortran/slatec/dlngam.f and every routine it calls (in fortran/slatec/ or fortran/support/). Translate literally, as the steering rules say: same evaluation order, same constants, same branches. Do not improve the algorithm. routines/dlngam.py must define dlngam(x: float) -> float and import nothing but math; put the helpers it needs (series evaluation, initialisation, machine constants) in the same file. You cannot run code: a trial harness outside your session will judge the port. When done, say in at most 8 lines what you translated.
+
+This is a cold test: in this run you can read and write only routines/dlngam.py among the ports. Other files in routines/ and everything in .kiro/specs/ are blocked, so translate every routine DLNGAM calls from the Fortran sources yourself.
