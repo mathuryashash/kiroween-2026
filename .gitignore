@@ -26,3 +26,4 @@ runs/guard_log/
 site/test-artifacts/
 node_modules/
 site/public/
+runs/guard_state/

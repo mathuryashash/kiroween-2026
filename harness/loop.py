@@ -3,6 +3,7 @@ harness/loop.py - GALVANI's self-healing loop, one command, no human in it.
 
   python -m harness.loop <name> [--model claude-haiku-4.5] [--max-rounds 4] [--credit-cap 3.0]
                                 [--agent-cmd "<template with {model}>"] [--dry-run] [--start port|repair]
+                                [--cold]   (cold test: the agent cannot read other ports or specs)
 
 Flow: (blind port if routines/<name>.py does not exist) -> dev trial -> evidence (trial report,
 precision autopsy of the worst failing inputs, per-hunk ablation of the previous round, the agent's
@@ -249,6 +250,22 @@ def _agent_argv(template, model: str) -> list[str]:
     return [shutil.which(parts[0]) or parts[0], *parts[1:]]
 
 
+GUARD_STATE = REPO_ROOT / "runs" / "guard_state"
+COLD_MODE: str | None = None   # set by loop(cold=True): the routine whose port alone the agent may touch
+
+
+def _set_cold_marker(target: str | None) -> None:
+    """Cold mode (loop-frozen-2): tools/guard/allowlist_guard.py lets the agent read and write
+    only routines/<target>.py among the ports, and no .kiro/specs/, while this file exists. The
+    agent cannot write runs/, so it cannot remove the marker; the loop removes it after each call."""
+    marker = GUARD_STATE / "cold.json"
+    if target is None:
+        marker.unlink(missing_ok=True)
+        return
+    GUARD_STATE.mkdir(parents=True, exist_ok=True)
+    marker.write_text(json.dumps({"target": target}), encoding="utf-8", newline="\n")
+
+
 def call_agent(prompt: str, model: str, tag: str, cmd_template=None, changed=None) -> dict:
     """Run the Kiro resurrector (with retries). The prompt is passed as one argv element.
 
@@ -264,11 +281,14 @@ def call_agent(prompt: str, model: str, tag: str, cmd_template=None, changed=Non
         log, err = base.with_suffix(".jsonl"), base.with_suffix(".err")
         timed_out = False
         with open(log, "wb") as fo, open(err, "wb") as fe:
+            _set_cold_marker(COLD_MODE)
             try:
                 rc = subprocess.run(cmd, stdout=fo, stderr=fe, cwd=str(REPO_ROOT),
                                     timeout=AGENT_TIMEOUT_S).returncode
             except subprocess.TimeoutExpired:
                 rc, timed_out = -1, True
+            finally:
+                _set_cold_marker(None)
         gz = log.with_suffix(".jsonl.gz")
         with open(log, "rb") as fi, gzip.open(gz, "wb") as fo:
             shutil.copyfileobj(fi, fo)
@@ -308,7 +328,11 @@ def blind_port_prompt(name: str) -> str:
         f"the algorithm. routines/{name}.py must define {name}(x: float) -> float and import nothing "
         f"but math; put the helpers it needs (series evaluation, initialisation, machine constants) "
         f"in the same file. You cannot run code: a trial harness outside your session will judge "
-        f"the port. When done, say in at most 8 lines what you translated.")
+        f"the port. When done, say in at most 8 lines what you translated."
+        + (f"\n\nThis is a cold test: in this run you can read and write only routines/{name}.py "
+           f"among the ports. Other files in routines/ and everything in .kiro/specs/ are blocked, "
+           f"so translate every routine {name.upper()} calls from the Fortran sources yourself."
+           if COLD_MODE == name else ""))
 
 
 def _cap(text: str, limit: int) -> str:
@@ -386,15 +410,22 @@ def _trial_line(t: dict) -> str:
 # ----------------------------------------------------------------------------- the loop
 
 def loop(name: str, model: str = "claude-haiku-4.5", max_rounds: int = 4, credit_cap: float = 3.0,
-         agent_cmd: str | None = None, dry_run: bool = False, start: str = "port") -> dict:
+         agent_cmd: str | None = None, dry_run: bool = False, start: str = "port",
+         cold: bool = False) -> dict:
+    global COLD_MODE
+    COLD_MODE = name if cold else None
     port = REPO_ROOT / "routines" / f"{name}.py"
     run_id = _stamp()
     ev_dir = REPO_ROOT / "runs" / name / "loop" / run_id
     ledger = {"name": name, "model": model, "run_id": run_id, "max_rounds": max_rounds,
               "credit_cap": credit_cap, "dev": {"seed": DEV[0], "n": DEV[1]},
               "heldout": {"seed": HELDOUT[0], "n": HELDOUT[1]}, "start_commit": None,
-              "rounds": [], "total_credits": 0.0, "stop_reason": None, "result": None}
+              "rounds": [], "total_credits": 0.0, "stop_reason": None, "result": None,
+              "cold": cold}
 
+    if (GUARD_STATE / "cold.json").exists():
+        print("[loop] PREFLIGHT: removing a stale cold-mode marker left by an interrupted run.")
+        _set_cold_marker(None)
     dirty = exam_dirty()
     if dirty:
         print("[loop] PREFLIGHT FAILED: exam files are not clean in git; every trial would be VOID.")
@@ -601,8 +632,10 @@ def main(argv=None) -> int:
     ap.add_argument("--agent-cmd")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--start", choices=["port", "repair"], default="port")
+    ap.add_argument("--cold", action="store_true",
+                    help="cold test: the agent may not read other ports or .kiro/specs/ (loop-frozen-2)")
     a = ap.parse_args(argv)
-    led = loop(a.name, a.model, a.max_rounds, a.credit_cap, a.agent_cmd, a.dry_run, a.start)
+    led = loop(a.name, a.model, a.max_rounds, a.credit_cap, a.agent_cmd, a.dry_run, a.start, a.cold)
     return 1 if led.get("error") else 0
 
 

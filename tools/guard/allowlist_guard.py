@@ -54,6 +54,43 @@ READ_ALLOW = (
 LISTING_TOOLS = {"list_directory"}
 
 
+# ---------------------------------------------------------------------------
+# Cold mode (loop-frozen-2): the loop writes runs/guard_state/cold.json with
+# {"target": "<name>"} before it calls the agent and removes it afterwards.
+# The agent cannot write runs/, so it cannot switch cold mode off. While the
+# marker exists, the agent may read and write only routines/<target>.py among
+# the ports, and cannot read .kiro/specs/ (which records earlier fixes): a
+# cold port has to find any fix on its own instead of copying an earlier heal.
+# An unreadable marker blocks everything (fail-closed).
+# ---------------------------------------------------------------------------
+
+def _cold_target() -> str | None:
+    state = os.environ.get("GALVANI_GUARD_STATE") or os.path.join(
+        os.path.dirname(__file__), "..", "..", "runs", "guard_state"
+    )
+    marker = os.path.join(os.path.normpath(state), "cold.json")
+    if not os.path.exists(marker):
+        return None
+    with open(marker, encoding="utf-8") as fh:
+        target = json.load(fh)["target"]
+    if not isinstance(target, str) or not re.fullmatch(r"[a-z0-9_]+", target):
+        raise ValueError(f"bad cold target {target!r}")
+    return target
+
+
+def _cold_blocks(rel: str, cold: str | None) -> bool:
+    """True when cold mode forbids touching *rel* (read or write)."""
+    if cold is None:
+        return False
+    if rel == "routines" or rel.startswith("routines/"):
+        # The routines/ folder itself is blocked too (a search over it reads every port);
+        # listing its file names is still allowed by the caller.
+        return rel != f"routines/{cold}.py"
+    if rel == ".kiro/specs" or rel.startswith(".kiro/specs/"):
+        return True
+    return False
+
+
 def _is_read_allowed(rel: str) -> bool:
     for a in READ_ALLOW:
         if a.endswith("/"):
@@ -206,11 +243,26 @@ def main() -> None:
         # the harness, referee, tests, variants or earlier run results.
         if tool_name in READ_ONLY_TOOLS:
             ws = _workspace_root(cwd)
-            for raw_path in _collect_paths(tool_input):
+            cold = _cold_target()
+            read_paths = _collect_paths(tool_input)
+            if not read_paths and tool_name not in LISTING_TOOLS:
+                # A content search with no path searches the whole workspace, exam included.
+                print(
+                    f"ALLOWLIST GUARD: '{tool_name}' without a path searches the whole "
+                    f"workspace — blocked. Give a path inside: {', '.join(READ_ALLOW)}.",
+                    file=sys.stderr,
+                )
+                _log({"decision": "block", "reason": "content search without path", "tool": tool_name})
+                sys.exit(2)
+            for raw_path in read_paths:
                 rel = _strip_prefix(_resolve(raw_path, cwd), ws)
                 if rel is None:
                     reason = "read outside workspace"
-                elif tool_name in LISTING_TOOLS or _is_read_allowed(rel):
+                elif tool_name in LISTING_TOOLS:
+                    continue
+                elif _cold_blocks(rel, cold):
+                    reason = f"cold mode: only routines/{cold}.py is readable among the ports"
+                elif _is_read_allowed(rel):
                     continue
                 else:
                     reason = "read outside sealed-exam allowlist"
@@ -234,12 +286,22 @@ def main() -> None:
         paths = _collect_paths(tool_input)
 
         if not paths:
-            # No path to check; allow (nothing to protect against)
+            # No path to check. Outside cold mode: allow (nothing to protect against).
+            # In cold mode only a file-NAME search is allowed: tools such as 'code'
+            # (code intelligence) take no path and could return another port's content.
+            if _cold_target() is not None and tool_name != "file_search":
+                print(
+                    f"ALLOWLIST GUARD: '{tool_name}' blocked in cold mode (no path to check).",
+                    file=sys.stderr,
+                )
+                _log({"decision": "block", "reason": "cold mode, pathless tool", "tool": tool_name})
+                sys.exit(2)
             _log({"decision": "allow", "reason": "no paths in input", "tool": tool_name})
             sys.exit(0)
 
         # --- for write tools (or unknown tools with paths), check allowlist ---
         ws = _workspace_root(cwd)
+        cold = _cold_target()
 
         for raw_path in paths:
             resolved = _resolve(raw_path, cwd)
@@ -258,6 +320,17 @@ def main() -> None:
                     "tool": tool_name,
                     "path": raw_path,
                 })
+                sys.exit(2)
+
+            # 1b. Cold mode: only the target port, no other port, no specs
+            if _cold_blocks(rel, cold):
+                print(
+                    f"ALLOWLIST GUARD: '{tool_name}' on '{raw_path}' blocked "
+                    f"(cold mode: only routines/{cold}.py may be touched).",
+                    file=sys.stderr,
+                )
+                _log({"decision": "block", "reason": "cold mode", "tool": tool_name,
+                      "path": raw_path, "rel": rel})
                 sys.exit(2)
 
             # 2. For write tools: must be under routines/ or .kiro/specs/
