@@ -5,3 +5,4 @@
 {"date": "2026-11-15 18:40", "what": "repair_dgamma_3 (claude-haiku-4.5)", "session": "sess_d4be0cd7-301d-4e3e-a0e7-6b06df038691", "credits": 0.218}
 {"date": "2026-11-21 23:48", "what": "spec cold-heal-remaining-flaws (claude-haiku-4.5)", "session_log": "runs/kiro_sessions/spec_cold_heal_20261121T181646Z.jsonl.gz", "credits": 0.5077}
 {"date": "2026-11-21 23:58", "what": "spec cold-heal-remaining-flaws review round (claude-haiku-4.5)", "session_log": "runs/kiro_sessions/spec_cold_heal_review_20261121T182238Z.jsonl.gz", "credits": 1.08}
+{"date": "2026-11-24 09:15", "what": "loop dlngam blind port (claude-haiku-4.5), healed_confirmed but inherited fix (see runs/ledger/dlngam_20261124T034238Z.NOTE.md)", "session_log": "runs/kiro_sessions/dlngam_20261124T034238Z_r0_try1.jsonl.gz", "credits": 0.85}
