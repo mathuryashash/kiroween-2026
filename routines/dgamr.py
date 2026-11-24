@@ -359,11 +359,10 @@ def dgamr(x):
     if x <= 0.0 and math.floor(x) == x:
         return 0.0
     
-    # Fixed for x=11.36: use direct DGAMMA for all positive x (no overflow risk)
-    # and |X| <= 10, use log-gamma only for negative x with |X| > 10
-    if abs(x) <= 10.0 or x > 0.0:
+    # For |X| <= 10, use direct DGAMMA
+    if abs(x) <= 10.0:
         return 1.0 / dgamma(x)
     
-    # For negative X with |X| > 10, use log-gamma to avoid underflow
+    # For |X| > 10, use log-gamma to avoid overflow/underflow
     alngx, sgngx = dlgams(x)
     return sgngx * math.exp(-alngx)
