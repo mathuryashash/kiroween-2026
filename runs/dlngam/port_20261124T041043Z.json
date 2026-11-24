@@ -1,0 +1,6 @@
+{
+  "verdict": "DISQUALIFIED",
+  "error": "DISQUALIFIED: SyntaxError: leading zeros in decimal integer literals are not permitted; use an 0o prefix for octal integers (dlngam.py, line 94)",
+  "impl": "port",
+  "name": "dlngam"
+}
