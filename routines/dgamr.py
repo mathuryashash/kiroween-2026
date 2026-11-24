@@ -389,12 +389,22 @@ def dgamr(x):
     Compute the reciprocal of the Gamma function.
     Returns 1 / GAMMA(X).
     
-    For |X| <= 10: uses DGAMMA directly.
+    For |X| <= 10: uses DGAMMA directly for most x, but switches to log-based
+    computation for very small |x| to avoid cancellation in the backward recurrence.
     For |X| > 10: uses DLGAMS (log-based computation) to avoid overflow/underflow.
     """
     if x <= 0.0 and int(x) == x:
         # X is 0 or a negative integer: GAMMA is undefined or infinite
         return 0.0
+    
+    # Failing inputs x=1.3368227206604834e-12, x=-1.426334358567423e-06:
+    # backward recurrence dgamma_val / (x + i - 1) incurs massive cancellation.
+    # For |x| < 0.01, use log-based path to avoid exploding intermediates.
+    if abs(x) < 0.01:
+        # Use logarithmic computation to avoid cancellation
+        alngx, sgngx = _dlgams(x)
+        # dgamr = sgngx * exp(-alngx)
+        return sgngx * math.exp(-alngx)
     
     if abs(x) <= 10.0:
         # Direct computation via DGAMMA
