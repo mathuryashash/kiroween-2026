@@ -105,8 +105,10 @@ def trial_port(name: str, seed: int, n: int, label: str, dry: bool = False) -> t
         return result, None
     path = write_run(name, "port", result)
     files = [path] + [p for p in [path.parent / "latest.json"] if p.exists()]
-    _commit(f"{name} {label} trial (seed {seed}, n={n}): {result['verdict']} "
-            f"{result['overall_pass_rate']:.2f}%", files)
+    # A DISQUALIFIED trial has no pass rate, only an error (loop run 20261124T040948Z crashed here).
+    rate = (f"{result['overall_pass_rate']:.2f}%" if "overall_pass_rate" in result
+            else (result.get("error", "").strip().splitlines() or ["(no error text)"])[0][:120])
+    _commit(f"{name} {label} trial (seed {seed}, n={n}): {result['verdict']} {rate}", files)
     return result, path
 
 
