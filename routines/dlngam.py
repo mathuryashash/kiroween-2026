@@ -286,14 +286,7 @@ def dlngam(x):
     y = abs(x)
     if y <= 10.0:
         # LOG (ABS (DGAMMA(X)) ) FOR ABS(X) .LE. 10.0
-        # For x near 1 or 2 (where gamma(x) ≈ 1), use log1p for precision
-        # Failing inputs: 1.0000000001754994, 2.0000000001170832
-        gamma_val = _dgamma(x)
-        abs_gamma = abs(gamma_val)
-        if abs(abs_gamma - 1.0) < 0.5:
-            # Use log1p when gamma is close to 1
-            return math.log1p(abs_gamma - 1.0)
-        return math.log(abs_gamma)
+        return math.log(abs(_dgamma(x)))
     
     # LOG ( ABS (DGAMMA(X)) ) FOR ABS(X) .GT. 10.0
     if y > dlngam.xmax:
