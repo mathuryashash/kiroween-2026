@@ -1,0 +1,46 @@
+{
+  "name": "dgamr",
+  "model": "claude-haiku-4.5",
+  "run_id": "20261124T040846Z",
+  "max_rounds": 4,
+  "credit_cap": 3.0,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000
+  },
+  "start_commit": "f1b4d5a00b94a5e8cb093179e275d26a5bac0aac",
+  "rounds": [
+    {
+      "round": 1,
+      "commit": "e48a150966a87d8322cb0782110eacba52569edf",
+      "credits": 0.1564,
+      "agent_text": " computation for more values. Looking at the evidence, the problem is in the small values range. Let me use a smaller threshold for the direct DGAMMA approach.**Change**: Lowered the threshold in `dgamr()` from `abs(x) <= 10.0` to `abs(x) <= 1.5` for direct DGAMMA computation. For `|x| <= 1.5` or `|x| > 10`, use the logarithmic path (DLGAMS), which avoids the cancellation error in `x + i - 1` that caused both failing inputs to lose ~500M and 260k ULP respectively. The failing inputs (1.3e-12 and -1.4e-6) now route through the numerically stable log-based path instead of DGAMMA's division loop.",
+      "trial_before": "STILL DEAD, overall 51.00%, small 9.3%, mid 100.0%, negative 42.5%",
+      "trial_after": "STILL DEAD, overall 51.00%, small 9.6%, mid 100.0%, negative 42.2%",
+      "trial_after_file": "runs/dgamr/port_20261124T040919Z.json",
+      "type": "no_gain",
+      "undo_commit": "1c7150a3f6bd727274dd5f622f4079b4d63df585"
+    },
+    {
+      "round": 2,
+      "commit": "5c568df4a9d43db5efef65dfb50deea07d728319",
+      "credits": 0.1725,
+      "agent_text": "\n- `1.3368227206604834e-12` (small)\n- `-1.426334358567423e-06` (negative, close to 0)\n\nBoth should use `_dlgams()` instead. The key insight: when x is in [-1.5, 1.5], the loop `dgamma_val / (x + i - 1)` has severe cancellation. Using the log-based path avoids this.**Change applied:**\n\nSplit the threshold: use `_dlgams()` (log-stable) for |x| \u2264 1.5 and |x| > 10, use `_dgamma()` only for 1.5 < |x| \u2264 10. The autopsy pinpointed `x + i - 1` cancellation in `_dgamma()` as the killer; this keeps the numerically stable middle band while routing problematic tiny/near-zero inputs to the robust log path.",
+      "trial_before": "STILL DEAD, overall 51.00%, small 9.3%, mid 100.0%, negative 42.5%",
+      "trial_after": "STILL DEAD, overall 51.00%, small 9.6%, mid 100.0%, negative 42.2%",
+      "trial_after_file": "runs/dgamr/port_20261124T040947Z.json",
+      "type": "no_gain",
+      "undo_commit": "b9ee6d96e74f63df6e429ff9affa5b3018c00dde"
+    }
+  ],
+  "total_credits": 0.3289,
+  "stop_reason": "two_failed_rounds_in_a_row",
+  "result": null,
+  "cold": true,
+  "final_dev_trial": "STILL DEAD, overall 51.00%, small 9.3%, mid 100.0%, negative 42.5%",
+  "end": "20261124T040948Z"
+}
