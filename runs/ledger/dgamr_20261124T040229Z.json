@@ -1,0 +1,41 @@
+{
+  "name": "dgamr",
+  "model": "claude-haiku-4.5",
+  "run_id": "20261124T040229Z",
+  "max_rounds": 4,
+  "credit_cap": 1.5,
+  "dev": {
+    "seed": 1,
+    "n": 2000
+  },
+  "heldout": {
+    "seed": 7,
+    "n": 10000
+  },
+  "start_commit": "799ea7b6b6065b7a17b2bb32d934dcb7697510e3",
+  "rounds": [
+    {
+      "round": 0,
+      "type": "port",
+      "commit": "ca3c3c24edd64e9f1cfd2f42c6e9c6f67b824354",
+      "credits": 0.6212
+    },
+    {
+      "round": 1,
+      "commit": "d65913f0ed5e7232f633d01dd894b4482524e471",
+      "credits": 0.3143,
+      "agent_text": "ir complete.**\n\n**Change:** Added a threshold check in `dgamr()`: for `|x| < 0.01`, switch from direct DGAMMA evaluation to log-based computation via DLGAMS. This avoids the catastrophic cancellation in the backward recurrence when `x + i - 1` cancels to a tiny value.\n\n**Rationale:** The autopsy showed both failures stem from `dgamma_val / (x + i - 1)` with tiny `x`. Computing `1/\u0393(x)` via `sgn(\u0393) \u00b7 exp(-log|\u0393|)` sidesteps the exploding intermediate values by working in log space. The threshold 0.01 covers both failing inputs (1.34e-12, -1.43e-6) while staying in the numerically stable regime.",
+      "trial_before": "STILL DEAD, overall 51.00%, small 9.3%, mid 100.0%, negative 42.5%",
+      "trial_after": "STILL DEAD, overall 51.05%, small 9.3%, mid 100.0%, negative 42.7%",
+      "trial_after_file": "runs/dgamr/port_20261124T040439Z.json",
+      "type": "no_gain",
+      "undo_commit": "a170b89947b95f5562cdb32ee39f6a11f44824cb"
+    }
+  ],
+  "total_credits": 0.9355,
+  "stop_reason": "credit_cap (0.94 spent + ~0.62 > 1.5)",
+  "result": null,
+  "cold": true,
+  "final_dev_trial": "STILL DEAD, overall 51.00%, small 9.3%, mid 100.0%, negative 42.5%",
+  "end": "20261124T040439Z"
+}
