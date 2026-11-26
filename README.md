@@ -31,10 +31,10 @@ The trial runs a routine on thousands of seeded random inputs, split into ranges
 The original fails 100% of tiny inputs. The loop `DGAMMA = DGAMMA/(X+I-1)` computes `(x + 1) - 1`, which throws away most of x's digits just before dividing by it. At x = 1e-12 the original is off by about 728 billion ULPs. Kiro's fix: `x + (i - 1)` (the integer part first). On 10,000 held-out inputs: tiny range 0% → 100%, max 1 ULP. ✓ [runs/dgamma/port_20261117T191545Z.json](runs/dgamma/port_20261117T191545Z.json)
 
 **DCOT (cotangent)** — Healed.
-Near multiples of pi, the original fails 29.5% of the time. Kiro's one-command loop fixed it in one round, 0.25 credits. Near-pi range: 72% → 100%. ✓ [runs/dcot/port_20261117T193736Z.json](runs/dcot/port_20261117T193736Z.json)
+Near multiples of pi, the original fails 28% of the time (72% pass rate). Kiro's one-command loop fixed it in one round, 0.25 credits. Near-pi range: 72% → 100%. ✓ [runs/dcot/port_20261117T193736Z.json](runs/dcot/port_20261117T193736Z.json)
 
 **DPSI (digamma)** — Healed (on the second try).
-The original fails 86.5% for small x. Cold run 1 (Haiku, frozen loop): Kiro tried two rounds, the first made two ranges worse and the loop undid it, and the second changed nothing useful. The autopsy had pointed at line 265, `x + i - 1`, the same flaw as DGAMMA, and Kiro didn't act on it. STILL DEAD. ✗ [runs/ledger/dpsi_20261117T193921Z.json](runs/ledger/dpsi_20261117T193921Z.json)
+The original fails 87% for small x (13% pass rate). Cold run 1 (Haiku, frozen loop): Kiro tried two rounds, the first made two ranges worse and the loop undid it, and the second changed nothing useful. The autopsy had pointed at line 265, `x + i - 1`, the same flaw as DGAMMA, and Kiro didn't act on it. STILL DEAD. ✗ [runs/ledger/dpsi_20261117T193921Z.json](runs/ledger/dpsi_20261117T193921Z.json)
 
 Cold run 2: Nothing in the exam changed, nothing in Kiro's prompt changed except the commit hash. Only the model changed, from Haiku to Sonnet (the plan from day one). Sonnet read only its own file, made the same one-line fix, and held-out trial agreed. Small range 13.1% → 100%, negative range 51.6% → 100%, one round, 0.56 credits. ✓ [runs/ledger/dpsi_20261122T035153Z.json](runs/ledger/dpsi_20261122T035153Z.json) + ablation [runs/dpsi/ablate_20261122T035821Z.json](runs/dpsi/ablate_20261122T035821Z.json)
 
