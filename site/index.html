@@ -161,6 +161,13 @@ footer p{margin:4px 0}
 </section>
 
 <section>
+  <h2>Cold test: two routines Kiro could not heal</h2>
+  <p class="lead">DGAMR and DLNGAM call DGAMMA, so an agent that can read the healed DGAMMA port can just copy it. That is what happened on the first DLNGAM run, so I added a cold mode: while Kiro works, the guard lets it read and write only its own port. Each routine got one declared run per model, with no reruns. Neither model healed either routine, and cold mode held in all four runs.</p>
+  <div class="scroll"><table class="t" id="cold-t"></table></div>
+  <p class="small" id="cold-more"></p>
+</section>
+
+<section>
   <h2>Census of the originals</h2>
   <p class="lead" id="census"></p>
   <div class="scroll"><table class="t" id="census-t"></table></div>
@@ -305,6 +312,14 @@ if (L.census) {
   $("#census-t").innerHTML = `<thead><tr><th>routine</th><th>worst range</th><th>pass</th><th>max ULP</th><th></th></tr></thead><tbody>` +
     L.census.failing.map(c => `<tr><td>${c.name.toUpperCase()}</td><td>${esc(c.domain)}</td><td class="bad">${pct(c.pass_rate)}</td><td>${ulp(c.max_ulp)}</td><td style="text-align:left">${esc(c.note || "")}${L.routines.some(r => r.name === c.name) ? " healed, see above" : ""}</td></tr>`).join("") + `</tbody>`;
 }
+// cold test
+if (L.cold_tests) {
+  const C = L.cold_tests;
+  $("#cold-t").innerHTML = `<thead><tr><th>routine</th><th>model</th><th>verdict</th><th>repair rounds</th><th>Kiro credits</th><th style="text-align:left">final trial</th><th>run files</th></tr></thead><tbody>` +
+    C.rows.map(c => `<tr><td>${c.routine.toUpperCase()}</td><td>${esc(c.model)}</td><td>${badge(c.verdict)}</td><td>${c.repair_rounds}</td><td>${Number(c.credits).toFixed(2)}</td><td style="text-align:left">${esc(c.detail)}</td><td>${c.files.map((f, i) => `<a href="${f.url}">${i + 1}</a>`).join(" ")}</td></tr>`).join("") + `</tbody>`;
+  $("#cold-more").innerHTML = `Where the two models went wrong (Haiku copied the Fortran's digit-group spaces into Python; Sonnet wrote valid Python but mistyped a few coefficients) is in <a href="${C.writeup_url}">${esc(C.writeup)}</a>.`;
+}
+
 $("#built").textContent = L.built_from.slice(0, 7);
 $("#built").href = L.built_from_url;
 $("#repo").href = L.repo;

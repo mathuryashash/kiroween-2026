@@ -271,6 +271,59 @@ def committed_json_plain(rel: str) -> None:
         raise SystemExit(f"refusing {rel}: not committed")
 
 
+# The declared cold runs of 24 Nov (tag loop-frozen-2, --cold): the guard let the agent touch only
+# its own port, so it could not copy the healed DGAMMA. One run per routine per model, no reruns.
+# Numbers come from the loop ledgers; the Haiku DLNGAM run crashed before writing a ledger, so its
+# verdict comes from the committed trial file and its credits from runs/credits.jsonl.
+COLD_TESTS = [
+    {"routine": "dgamr", "model": "claude-haiku-4.5",
+     "ledgers": ["runs/ledger/dgamr_20261124T040229Z.json", "runs/ledger/dgamr_20261124T040846Z.json"]},
+    {"routine": "dlngam", "model": "claude-haiku-4.5", "trial": "runs/dlngam/port_20261124T041043Z.json",
+     "credits_log_key": "dlngam_20261124T040948Z", "note": "runs/ledger/dlngam_20261124T040948Z.NOTE.md"},
+    {"routine": "dgamr", "model": "claude-sonnet-4.5", "ledgers": ["runs/ledger/dgamr_20261124T045708Z.json"]},
+    {"routine": "dlngam", "model": "claude-sonnet-4.5", "ledgers": ["runs/ledger/dlngam_20261124T050219Z.json"]},
+]
+COLD_WRITEUP = "runs/COLD_TEST_HAIKU_VS_SONNET.md"
+
+
+def cold_tests() -> dict:
+    rows = []
+    for c in COLD_TESTS:
+        row = {"routine": c["routine"], "model": c["model"], "files": []}
+        if "ledgers" in c:
+            leds = []
+            for rel in c["ledgers"]:
+                led, commit = committed_json(rel)
+                if not led.get("cold") or led.get("model") != c["model"]:
+                    raise SystemExit(f"{rel}: not a cold run of {c['model']}")
+                leds.append(led)
+                row["files"].append({"file": rel, "url": f"{GH}/blob/{commit}/{rel}"})
+            final = leds[-1]["final_dev_trial"]
+            row["verdict"] = final.split(",")[0].strip()
+            row["detail"] = final.split(",", 1)[1].strip() if "," in final else ""
+            row["credits"] = round(sum(x["total_credits"] for x in leds), 2)
+            row["repair_rounds"] = sum(1 for x in leds for r in x["rounds"] if r.get("type") != "port")
+        else:
+            trial, commit = committed_json(c["trial"])
+            row["verdict"] = trial["verdict"]
+            row["detail"] = trial.get("error", "").replace("DISQUALIFIED: ", "").replace(
+                "; use an 0o prefix for octal integers", "")
+            row["files"].append({"file": c["trial"], "url": f"{GH}/blob/{commit}/{c['trial']}"})
+            committed_json_plain(c["note"])
+            row["files"].append({"file": c["note"], "url": f"{GH}/blob/{git('log', '-1', '--format=%H', '--', c['note'])}/{c['note']}"})
+            committed_json_plain("runs/credits.jsonl")
+            lines = (REPO / "runs" / "credits.jsonl").read_text(encoding="utf-8").splitlines()
+            hits = [json.loads(ln) for ln in lines if c["credits_log_key"] in ln]
+            if len(hits) != 1:
+                raise SystemExit(f"credits.jsonl: expected one line for {c['credits_log_key']}, got {len(hits)}")
+            row["credits"] = hits[0]["credits"]
+            row["repair_rounds"] = 0
+        rows.append(row)
+    committed_json_plain(COLD_WRITEUP)
+    return {"rows": rows, "writeup": COLD_WRITEUP,
+            "writeup_url": f"{GH}/blob/{git('log', '-1', '--format=%H', '--', COLD_WRITEUP)}/{COLD_WRITEUP}"}
+
+
 def _clean(v):
     """JSON has no inf/nan: write them as strings the page can show."""
     if isinstance(v, float) and not math.isfinite(v):
@@ -290,6 +343,7 @@ def build(out: Path) -> dict:
     ledger = {"built_from": head, "built_from_url": f"{GH}/tree/{head}", "repo": GH,
               "routines": [entry_data(e) for e in ENTRIES]}
     ledger["census"] = census_summary()
+    ledger["cold_tests"] = cold_tests()
     text = json.dumps(_clean(ledger), separators=(",", ":"), allow_nan=False, default=str)
     (out / "data" / "ledger.json").write_text(text, encoding="utf-8")
     (out / ".nojekyll").write_text("", encoding="utf-8")
