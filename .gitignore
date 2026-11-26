@@ -27,3 +27,6 @@ site/test-artifacts/
 node_modules/
 site/public/
 runs/guard_state/
+
+# Test artifacts (created by pytest, not part of submission)
+runs/kiro_sessions/test_*.jsonl.gz
